@@ -1,5 +1,7 @@
 include $(TOPDIR)/rules.mk
 
+PKG_VERSION:=0.1
+
 include $(INCLUDE_DIR)/package.mk
 
 define Package/doornet2-base

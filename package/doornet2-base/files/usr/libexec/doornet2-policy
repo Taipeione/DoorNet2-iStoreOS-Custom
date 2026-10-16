@@ -19,21 +19,31 @@ ensure_wechat_direct() {
 	uci -q get "$config.WeChatDirect.group" >/dev/null 2>&1 || \
 		uci -q set "$config.WeChatDirect.group='CN'"
 
+	domains=$(uci -q get "$config.WeChatDirect.domain_list" 2>/dev/null || true)
 	while IFS= read -r domain; do
 		[ -n "$domain" ] || continue
 		case "$domain" in \#*) continue ;; esac
-		if ! uci -q get "$config.WeChatDirect.domain_list" 2>/dev/null | \
-			grep -Fqx "$domain"; then
-			uci -q add_list "$config.WeChatDirect.domain_list=$domain"
+		if ! printf '%s\n' "$domains" | grep -Fqx "$domain"; then
+			if [ -n "$domains" ]; then
+				domains=$(printf '%s\n%s' "$domains" "$domain")
+			else
+				domains=$domain
+			fi
 		fi
 	done < /etc/doornet2/wechatdirect.domains
+	uci -q set "$config.WeChatDirect.domain_list=$domains"
 
-	# The stock PassWall/PassWall2 shunt node is named myshunt. Only add the
-	# missing link; a user-created node or an existing link is untouched.
-	if uci -q get "$config.myshunt" >/dev/null 2>&1 && \
-		! uci -q get "$config.myshunt.WeChatDirect" >/dev/null 2>&1; then
-		uci -q set "$config.myshunt.WeChatDirect='_direct'"
-	fi
+	# Link the rule to existing CN-group shunt nodes. Explicit user mappings
+	# win; missing mappings are set to direct without touching other rules.
+	uci -q show "$config" | while IFS= read -r entry; do
+		case "$entry" in
+			"$config".*.protocol="'_shunt'") node=${entry#"$config".}; node=${node%%.*} ;;
+			*) continue ;;
+		esac
+		[ "$(uci -q get "$config.$node.shunt_group" 2>/dev/null || true)" = "CN" ] || continue
+		uci -q get "$config.$node.WeChatDirect" >/dev/null 2>&1 || \
+			uci -q set "$config.$node.WeChatDirect='_direct'"
+	done
 	uci -q commit "$config"
 }
 
@@ -53,6 +63,8 @@ case "$action" in
 			uci -q set doornet2.global.passwall2_default='0'
 		uci -q get doornet2.global.wechat_direct >/dev/null 2>&1 || \
 			uci -q set doornet2.global.wechat_direct='1'
+		uci -q get doornet2.global.version >/dev/null 2>&1 || \
+			uci -q set doornet2.global.version='V0.1'
 		uci -q commit doornet2
 		[ "$(uci -q get doornet2.global.wechat_direct || true)" = "1" ] && {
 			ensure_wechat_direct passwall

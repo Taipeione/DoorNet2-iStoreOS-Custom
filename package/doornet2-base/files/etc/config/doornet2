@@ -1,5 +1,5 @@
 config policy 'global'
-	option version '0.1'
+	option version 'V0.1'
 	option lan_ipv4 '192.168.100.1'
 	option lan_netmask '255.255.255.0'
 	option passwall_default '0'

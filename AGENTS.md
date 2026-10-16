@@ -1,6 +1,6 @@
 # DoorNet2 iStoreOS Custom Firmware
 
-This public repository is the DoorNet2 RK3399 firmware project. The project version is `V0.1`; do not use the R76S `R76S-V1.4.6` version scheme.
+This private repository is the DoorNet2 RK3399 firmware project. The project version is `V0.1`; do not use the R76S `R76S-V1.4.6` version scheme.
 
 ## Permanent rules
 

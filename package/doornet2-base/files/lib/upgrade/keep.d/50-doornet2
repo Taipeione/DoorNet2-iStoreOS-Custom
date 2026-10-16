@@ -6,8 +6,14 @@
 /etc/config/ppp
 /etc/config/doornet2
 /etc/config/passwall
+/etc/config/passwall_server
 /etc/config/passwall2
+/etc/config/passwall2_server
 /etc/config/smartdns
-/etc/config/AdGuardHome
+/etc/config/adguardhome
+/etc/adguardhome.yaml
+/var/lib/adguardhome
+/etc/passwall
+/etc/smartdns
 /etc/config/https-dns-proxy
 /etc/doornet2

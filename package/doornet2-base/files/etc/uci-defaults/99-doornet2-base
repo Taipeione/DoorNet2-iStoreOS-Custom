@@ -4,7 +4,7 @@
 # address, so a sysupgrade cannot turn a user's LAN back into the V0.1 default.
 uci -q get doornet2.global >/dev/null 2>&1 || {
 	uci -q set doornet2.global=policy
-	uci -q set doornet2.global.version='0.1'
+	uci -q set doornet2.global.version='V0.1'
 }
 
 uci -q get doornet2.global.lan_ipv4 >/dev/null 2>&1 || \
@@ -18,5 +18,12 @@ uci -q get doornet2.global.passwall2_default >/dev/null 2>&1 || \
 uci -q get doornet2.global.wechat_direct >/dev/null 2>&1 || \
 	uci -q set doornet2.global.wechat_direct='1'
 uci -q commit doornet2
+
+# On a clean install, run after upstream package defaults have populated their
+# UCI files, then enable the additive reconciler for subsequent boots.
+if [ -x /etc/init.d/doornet2-policy ]; then
+	/etc/init.d/doornet2-policy enable
+	/usr/libexec/doornet2-policy reconcile
+fi
 
 exit 0
