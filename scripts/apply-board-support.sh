@@ -13,6 +13,7 @@ kernel_dts="$source_dir/target/linux/rockchip/dts/rk3399"
 uboot_patches="$source_dir/package/boot/uboot-rockchip/patches"
 policy_package="$source_dir/package/doornet2-base"
 mkdir -p "$kernel_dts" "$uboot_patches" "$policy_package"
+rm -f "$source_dir/target/linux/rockchip/patches-6.6/822-add-rk3399-doornet2-dtb.patch"
 
 install -m 0644 "$repo_root/board/doorNet2/kernel/rk3399-doornet2.dtsi" "$kernel_dts/rk3399-doornet2.dtsi"
 install -m 0644 "$repo_root/board/doorNet2/kernel/rk3399-doornet2.dts" "$kernel_dts/rk3399-doornet2.dts"
