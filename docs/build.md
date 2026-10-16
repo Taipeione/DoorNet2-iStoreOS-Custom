@@ -6,7 +6,7 @@ On macOS, [`scripts/build-v0.1.sh`](../scripts/build-v0.1.sh) runs the build ins
 
 The local builder image is used only as a Linux build environment. No R76S board files, DTS, U-Boot configuration, partition layout, or network mapping are used by DoorNet2.
 
-The build script applies the reviewed board files, adds the DoorNet2 image/device definition, adds the U-Boot patch, installs the `doornet2-base` policy package, sets the clean-install LAN to `192.168.100.1/24`, runs static checks, then compiles the kernel, U-Boot, and full image.
+The build script applies the reviewed board files, adds the DoorNet2 image/device definition, adds the U-Boot patch, installs the `doornet2-base` policy package, sets the clean-install LAN to `192.168.100.1/24`, runs static checks, then compiles the kernel, U-Boot, and full image. The DoorNet2 U-Boot target is built through its native `arch/arm/dts` path because the board DTS has not yet been independently verified as an upstream U-Boot DTS.
 
 `doornet2-base` is intentionally conservative: its UCI defaults are additive, its upgrade keep list preserves network and service configuration, and its policy init script never starts or stops optional proxy/DNS services. When a PassWall or PassWall2 config is present, it adds the missing `WeChatDirect` shunt entry and only the missing domains/link; repeated reconciliation is idempotent. PassWall/PassWall2, SmartDNS, and AdGuard Home must only be enabled after their exact iStoreOS feed revisions are pinned and their lifecycle is tested.
 

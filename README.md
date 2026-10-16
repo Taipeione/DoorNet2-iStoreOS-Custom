@@ -12,7 +12,7 @@ Public firmware project for EmbedFire DoorNet2, an RK3399-based device.
 
 ## Status
 
-The repository contains the first board integration, a reproducible build path, and the `doornet2-base` policy package. The audit is in [`docs/hardware-audit.md`](docs/hardware-audit.md), the build procedure is in [`docs/build.md`](docs/build.md), and the V0.1 test matrix is in [`docs/test-matrix.md`](docs/test-matrix.md). No release exists and no real DoorNet2 hardware test has been performed.
+The repository contains the first board integration, a reproducible build path, and the `doornet2-base` policy package. The RK3399 Linux target and DoorNet2 U-Boot package compile have passed in the Linux builder; the complete image is not yet released. The audit is in [`docs/hardware-audit.md`](docs/hardware-audit.md), the build procedure is in [`docs/build.md`](docs/build.md), and the V0.1 test matrix is in [`docs/test-matrix.md`](docs/test-matrix.md). No release exists and no real DoorNet2 hardware test has been performed.
 
 The audit found community DoorNet2 DTS/U-Boot material, but not enough verified information to claim a complete iStoreOS 24.10.8 image. Board variants and the exact production partition/boot image layout still require reconciliation. PassWall/PassWall2 and DNS integration remain blocked on reproducible iStoreOS feed/package inputs; the policy package deliberately does not start or stop optional services.
 
