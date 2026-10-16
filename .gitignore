@@ -1,0 +1,11 @@
+# Local clones and build scratch space; never part of a release.
+work/
+
+# Build outputs and generated logs.
+bin/
+build_dir/
+staging_dir/
+*.log
+
+# macOS/editor noise.
+.DS_Store
