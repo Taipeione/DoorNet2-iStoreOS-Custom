@@ -47,17 +47,19 @@ if [ "$(uname -s)" = "Darwin" ]; then
 			printf "CONFIG_GOLANG_EXTERNAL_BOOTSTRAP_ROOT=\\\"%s\\\"\\n" "$bootstrap_root" >> /src/.config
 		fi
 		./scripts/feeds update -a
-		if grep -q '^PKG_VERSION:=0.2.6$' feeds/passwall_packages/geoview/Makefile; then
+		if grep -q "^PKG_VERSION:=0.2.6$" feeds/passwall_packages/geoview/Makefile; then
 			patch -p1 < board/doorNet2/feeds/0001-geoview-go123-compatible.patch
-		elif ! grep -q '^PKG_VERSION:=0.1.10$' feeds/passwall_packages/geoview/Makefile || \
-			! grep -q '^PKG_HASH:=9221df928df68030893125a60bdf6d8a1fef2b199fa58ed80772cb3c17225fc5$' feeds/passwall_packages/geoview/Makefile; then
-			echo 'Unexpected geoview feed version or hash; refusing an unpinned build.' >&2
+		elif ! grep -q "^PKG_VERSION:=0.1.10$" feeds/passwall_packages/geoview/Makefile || \
+			! grep -q "^PKG_HASH:=9221df928df68030893125a60bdf6d8a1fef2b199fa58ed80772cb3c17225fc5$" feeds/passwall_packages/geoview/Makefile; then
+			echo "Unexpected geoview feed version or hash; refusing an unpinned build." >&2
 			exit 1
 		fi
-		./scripts/feeds install luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng
+		./scripts/feeds install luci-theme-argon luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng
 		sed -i -e "/^CONFIG_GDB=/d" -e "/^# CONFIG_GDB is not set/d" /src/.config
 		printf "%s\\n" "# CONFIG_GDB is not set" >> /src/.config
 		make -C /src defconfig
+		sed -i "/^CONFIG_PACKAGE_dnsmasq=/d" /src/.config
+		printf "# CONFIG_PACKAGE_dnsmasq is not set\\n" >> /src/.config
 		for package in u-boot-easepi-rk3528 u-boot-easepi-rk3568 u-boot-easepi-rk3568-rk809 u-boot-easepi-rk3576 u-boot-easepi-rk3588; do
 			sed -i "/^CONFIG_PACKAGE_${package}=/d" /src/.config
 			printf "# CONFIG_PACKAGE_%s is not set\\n" "$package" >> /src/.config
@@ -84,7 +86,7 @@ else
 		echo 'Unexpected geoview feed version or hash; refusing an unpinned build.' >&2
 		exit 1
 	fi
-	./scripts/feeds install luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng
+	./scripts/feeds install luci-theme-argon luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng
 	if [ "$(uname -m)" = aarch64 ]; then
 		bootstrap_tar="$source_dir/dl/go1.20.14.linux-arm64.tar.gz"
 		bootstrap_root="$source_dir/tmp/go-bootstrap"
@@ -101,6 +103,8 @@ else
 	sed -i -e '/^CONFIG_GDB=/d' -e '/^# CONFIG_GDB is not set/d' "$source_dir/.config"
 	printf '%s\n' '# CONFIG_GDB is not set' >> "$source_dir/.config"
 	make -C "$source_dir" defconfig
+	sed -i '/^CONFIG_PACKAGE_dnsmasq=/d' "$source_dir/.config"
+	printf '%s\n' '# CONFIG_PACKAGE_dnsmasq is not set' >> "$source_dir/.config"
 	for package in u-boot-easepi-rk3528 u-boot-easepi-rk3568 u-boot-easepi-rk3568-rk809 u-boot-easepi-rk3576 u-boot-easepi-rk3588; do
 		sed -i "/^CONFIG_PACKAGE_${package}=/d" "$source_dir/.config"
 		printf '# CONFIG_PACKAGE_%s is not set\n' "$package" >> "$source_dir/.config"

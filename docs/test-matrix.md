@@ -1,6 +1,6 @@
 # DoorNet2 V0.1 test matrix
 
-Repository/static checks and pinned-feed resolution have passed. The complete image build is in progress; no complete image has passed acceptance yet. No real-device tests have been run. Build-time/static checks are deliberately separate from service runtime and hardware acceptance.
+Repository/static checks, pinned-feed resolution, and full image construction have passed. No real-device tests have been run, so image construction is not hardware acceptance and does not authorize flashing. Build-time/static checks are deliberately separate from service runtime and hardware acceptance.
 
 | Area | Required check | Status |
 |---|---|---|
@@ -9,15 +9,20 @@ Repository/static checks and pinned-feed resolution have passed. The complete im
 | Build | ARM64 Go external bootstrap checksum and Go host toolchain compile | PASS |
 | Build | RK3399 Linux target compile | PASS |
 | Build | DoorNet2 U-Boot target compile, including SPL/TPL and DTB | PASS |
-| Build | Complete DoorNet2 image and metadata | NOT TESTED |
+| Build | Complete DoorNet2 image and metadata (ext4 and squashfs sysupgrade artifacts) | PASS |
+| Build | Image SHA256 matches generated `sha256sums` and `profiles.json` metadata | PASS |
+| Build | Image target/profile/version: `embedfire,doornet2`, RK3399, DoorNet2 V0.1 | PASS |
+| Build | Full-image package installation including dnsmasq-full, Argon, and selected optional services | PASS |
 | Build | Resolved config includes PassWall, PassWall2, SmartDNS, LuCI SmartDNS, AdGuard Home, ChinaDNS-NG | PASS |
-| Defaults | PassWall and PassWall2 upstream defaults are disabled | PASS |
-| Defaults | SmartDNS UCI default is disabled | PASS |
-| Defaults | OTA keep list covers network and optional-service UCI/config/data paths | PASS |
+| Defaults | PassWall and PassWall2 shipped default configs set `enabled=0` | PASS |
+| Defaults | SmartDNS shipped UCI default sets `enabled=0` | PASS |
+| Defaults | AdGuard Home package config and init script are present; runtime activation behavior | NOT TESTED |
+| Defaults | Built sysupgrade keep files cover network and optional-service UCI/config/data paths | PASS |
+| Defaults | Built clean-install configuration sets LAN to `192.168.100.1/24`; no `192.168.50.1` target default | PASS |
 | Defaults | WeChatDirect additive/idempotent policy logic and CN-shunt association | NOT TESTED |
 | Boot | Cold boot from MicroSD | NOT TESTED |
 | Boot | eMMC boot | NOT TESTED |
-| Network | Clean-install LAN `192.168.100.1/24` | NOT TESTED |
+| Network | Device applies clean-install LAN and is reachable at `192.168.100.1/24` | NOT TESTED |
 | Management | LuCI and SSH | NOT TESTED |
 | WAN | DHCP, PPPoE, IPv4, IPv6 | NOT TESTED |
 | Services | DHCP, DNS ports `53`, `3053`, `6053`, `15353`, `15355`, firewall with optional services disabled | NOT TESTED |
