@@ -13,7 +13,7 @@ Audit started 2026-10-16. This is an evidence record, not a hardware acceptance 
 | Storage | Sources enable 8-bit non-removable eMMC and 4-bit removable MicroSD with card-detect/power GPIOs. | Source-level evidence only. |
 | Ethernet | Sources describe the SoC GMAC path and a PCIe Realtek path; one source uses `realtek,r8168`, another models an RTL8211F GMAC PHY. | Mapping/PHY/port labels require confirmation. |
 | LEDs/key | Sources map system, LAN, WAN LEDs and reset GPIOs. | Source-level evidence only. |
-| iStoreOS | Official repository has an active `istoreos-24.10` line, but this workspace had no iStoreOS source or DoorNet2 baseline. Code search found no DoorNet2 support in the official tree. | Source pin/integration still pending. |
+| iStoreOS | Official repository has an active `istoreos-24.10` line. The V0.1 build is pinned to commit `a405f0378aef729f0f250c94b18a34a09b7d8890` (24.10.8 release line); code search found no DoorNet2 support in the official tree. | Base pin recorded; DoorNet2 integration is in this repository and still requires compile/hardware validation. |
 
 ## Open items
 
