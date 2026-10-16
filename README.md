@@ -1,6 +1,6 @@
 # DoorNet2 iStoreOS Custom Firmware
 
-Private firmware project for EmbedFire DoorNet2, an RK3399-based device.
+Public firmware project for EmbedFire DoorNet2, an RK3399-based device.
 
 ## V0.1 target
 
@@ -13,7 +13,7 @@ Private firmware project for EmbedFire DoorNet2, an RK3399-based device.
 
 ## Status
 
-The repository contains the board integration, pinned feed inputs, a reproducible Linux-container build path, and the `doornet2-base` policy package. The RK3399 Linux target, DoorNet2-specific U-Boot variant, and complete ext4/squashfs firmware images have built successfully; profile/version metadata and SHA256 checks pass. Hardware, plugin lifecycle, and OTA restore tests remain NOT TESTED. The audit is in [`docs/hardware-audit.md`](docs/hardware-audit.md), the build procedure is in [`docs/build.md`](docs/build.md), and the V0.1 test matrix is in [`docs/test-matrix.md`](docs/test-matrix.md). No formal release exists and no real DoorNet2 hardware test has been performed.
+The repository contains the board integration, pinned feed inputs, a reproducible Linux-container build path, and the `doornet2-base` policy package. The RK3399 Linux target, DoorNet2-specific U-Boot variant, and complete ext4/squashfs firmware images have built successfully; profile/version metadata and SHA256 checks pass. An isolated test using the built firmware's UCI binary verifies WeChatDirect policy merge/idempotence and preservation of user LAN and proxy enablement values. Device boot, plugin process lifecycle, DNS runtime, and OTA restore tests remain NOT TESTED. The audit is in [`docs/hardware-audit.md`](docs/hardware-audit.md), the build procedure is in [`docs/build.md`](docs/build.md), and the V0.1 test matrix is in [`docs/test-matrix.md`](docs/test-matrix.md). No formal release exists and no real DoorNet2 hardware test has been performed.
 
 The audit found community DoorNet2 DTS/U-Boot material, but not enough verified information to claim hardware acceptance. Board variants and the exact production partition/boot image layout still require reconciliation. PassWall/PassWall2 and DNS runtime lifecycle tests remain open; the policy package deliberately does not start or stop optional services.
 

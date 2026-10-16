@@ -13,13 +13,16 @@ Repository/static checks, pinned-feed resolution, and full image construction ha
 | Build | Image SHA256 matches generated `sha256sums` and `profiles.json` metadata | PASS |
 | Build | Image target/profile/version: `embedfire,doornet2`, RK3399, DoorNet2 V0.1 | PASS |
 | Build | Full-image package installation including dnsmasq-full, Argon, and selected optional services | PASS |
+| Build | Latest full build log reviewed: no fatal make error; nonfatal feed/configuration warnings documented | PASS |
+| Policy | Isolated built-rootfs UCI test: WeChatDirect merge, mapping preservation, disabled defaults, and repeat idempotence | PASS |
+| Policy | Reconciler preserves user LAN value and PassWall/PassWall2 enabled/disabled toggles | PASS |
 | Build | Resolved config includes PassWall, PassWall2, SmartDNS, LuCI SmartDNS, AdGuard Home, ChinaDNS-NG | PASS |
 | Defaults | PassWall and PassWall2 shipped default configs set `enabled=0` | PASS |
 | Defaults | SmartDNS shipped UCI default sets `enabled=0` | PASS |
 | Defaults | AdGuard Home package config and init script are present; runtime activation behavior | NOT TESTED |
 | Defaults | Built sysupgrade keep files cover network and optional-service UCI/config/data paths | PASS |
 | Defaults | Built clean-install configuration sets LAN to `192.168.100.1/24`; no `192.168.50.1` target default | PASS |
-| Defaults | WeChatDirect additive/idempotent policy logic and CN-shunt association | NOT TESTED |
+| Policy | WeChatDirect additive/idempotent merge and CN-shunt association using the built UCI binary | PASS |
 | Boot | Cold boot from MicroSD | NOT TESTED |
 | Boot | eMMC boot | NOT TESTED |
 | Network | Device applies clean-install LAN and is reachable at `192.168.100.1/24` | NOT TESTED |

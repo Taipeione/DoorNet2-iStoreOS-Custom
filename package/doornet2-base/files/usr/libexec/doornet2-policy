@@ -13,11 +13,11 @@ ensure_wechat_direct() {
 		uci -q set "$config.WeChatDirect=shunt_rules"
 
 	uci -q get "$config.WeChatDirect.remarks" >/dev/null 2>&1 || \
-		uci -q set "$config.WeChatDirect.remarks='WeChatDirect'"
+		uci -q set "$config.WeChatDirect.remarks=WeChatDirect"
 	uci -q get "$config.WeChatDirect.network" >/dev/null 2>&1 || \
-		uci -q set "$config.WeChatDirect.network='tcp,udp'"
+		uci -q set "$config.WeChatDirect.network=tcp,udp"
 	uci -q get "$config.WeChatDirect.group" >/dev/null 2>&1 || \
-		uci -q set "$config.WeChatDirect.group='CN'"
+		uci -q set "$config.WeChatDirect.group=CN"
 
 	domains=$(uci -q get "$config.WeChatDirect.domain_list" 2>/dev/null || true)
 	while IFS= read -r domain; do
@@ -42,7 +42,7 @@ ensure_wechat_direct() {
 		esac
 		[ "$(uci -q get "$config.$node.shunt_group" 2>/dev/null || true)" = "CN" ] || continue
 		uci -q get "$config.$node.WeChatDirect" >/dev/null 2>&1 || \
-			uci -q set "$config.$node.WeChatDirect='_direct'"
+			uci -q set "$config.$node.WeChatDirect=_direct"
 	done
 	uci -q commit "$config"
 }

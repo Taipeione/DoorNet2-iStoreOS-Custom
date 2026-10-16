@@ -29,6 +29,7 @@ if [ "$(uname -s)" = "Darwin" ]; then
 	docker create --name "$container" -v "$volume:/src" "$image" true >/dev/null
 	docker cp "$copy_dir/." "$container:/src/"
 	docker cp "$repo_root/configs/doorNet2-v0.1.config" "$container:/src/.config"
+	docker cp "$repo_root/scripts/test-policy-v0.1.sh" "$container:/src/test-policy-v0.1.sh"
 	docker rm "$container" >/dev/null
 	docker run --rm -e BUILD_JOBS="$jobs" -e BUILD_VERBOSE="${BUILD_VERBOSE:-}" -v "$volume:/src" "$image" bash -lc '
 		set -eu
@@ -68,6 +69,7 @@ if [ "$(uname -s)" = "Darwin" ]; then
 		make -C /src -j"$BUILD_JOBS" target/linux/compile
 		make -C /src -j"$BUILD_JOBS" package/boot/uboot-rockchip/compile BUILD_VARIANT=doornet2-rk3399
 		make -C /src -j"$BUILD_JOBS" V="$BUILD_VERBOSE"
+		/src/test-policy-v0.1.sh /src/build_dir/target-aarch64_generic_musl/root-rockchip
 	'
 	output_dir=${BUILD_OUTPUT_DIR:-"$repo_root/work/build-output"}
 	mkdir -p "$output_dir"
@@ -113,6 +115,11 @@ else
 	make -C "$source_dir" -j"$jobs" target/linux/compile
 	make -C "$source_dir" -j"$jobs" package/boot/uboot-rockchip/compile BUILD_VARIANT=doornet2-rk3399
 	make -C "$source_dir" -j"$jobs" V="${BUILD_VERBOSE:-}"
+	if [ "$(id -u)" -eq 0 ]; then
+		"$repo_root/scripts/test-policy-v0.1.sh" "$source_dir/build_dir/target-aarch64_generic_musl/root-rockchip"
+	else
+		echo 'NOT TESTED: policy integration test requires root and chroot.'
+	fi
 	output_dir=${BUILD_OUTPUT_DIR:-"$repo_root/work/build-output"}
 	mkdir -p "$output_dir"
 	cp -R "$source_dir/bin/targets/rockchip/armv8/." "$output_dir/"
