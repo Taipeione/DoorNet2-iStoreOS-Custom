@@ -4,6 +4,39 @@ set -eu
 
 action=${1:-reconcile}
 
+ensure_wechat_direct() {
+	config=$1
+	config_file="/etc/config/$config"
+	[ -f "$config_file" ] || return 0
+
+	uci -q get "$config.WeChatDirect" >/dev/null 2>&1 || \
+		uci -q set "$config.WeChatDirect=shunt_rules"
+
+	uci -q get "$config.WeChatDirect.remarks" >/dev/null 2>&1 || \
+		uci -q set "$config.WeChatDirect.remarks='WeChatDirect'"
+	uci -q get "$config.WeChatDirect.network" >/dev/null 2>&1 || \
+		uci -q set "$config.WeChatDirect.network='tcp,udp'"
+	uci -q get "$config.WeChatDirect.group" >/dev/null 2>&1 || \
+		uci -q set "$config.WeChatDirect.group='CN'"
+
+	while IFS= read -r domain; do
+		[ -n "$domain" ] || continue
+		case "$domain" in \#*) continue ;; esac
+		if ! uci -q get "$config.WeChatDirect.domain_list" 2>/dev/null | \
+			grep -Fqx "$domain"; then
+			uci -q add_list "$config.WeChatDirect.domain_list=$domain"
+		fi
+	done < /etc/doornet2/wechatdirect.domains
+
+	# The stock PassWall/PassWall2 shunt node is named myshunt. Only add the
+	# missing link; a user-created node or an existing link is untouched.
+	if uci -q get "$config.myshunt" >/dev/null 2>&1 && \
+		! uci -q get "$config.myshunt.WeChatDirect" >/dev/null 2>&1; then
+		uci -q set "$config.myshunt.WeChatDirect='_direct'"
+	fi
+	uci -q commit "$config"
+}
+
 case "$action" in
 	reconcile)
 		# Policy only: never start, stop, or enable PassWall, PassWall2, DNS
@@ -21,6 +54,10 @@ case "$action" in
 		uci -q get doornet2.global.wechat_direct >/dev/null 2>&1 || \
 			uci -q set doornet2.global.wechat_direct='1'
 		uci -q commit doornet2
+		[ "$(uci -q get doornet2.global.wechat_direct || true)" = "1" ] && {
+			ensure_wechat_direct passwall
+			ensure_wechat_direct passwall2
+		}
 		;;
 	*)
 		echo "usage: $0 reconcile" >&2
