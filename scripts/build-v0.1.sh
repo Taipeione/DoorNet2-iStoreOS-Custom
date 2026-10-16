@@ -27,12 +27,16 @@ if [ "$(uname -s)" = "Darwin" ]; then
 	docker run --rm -e BUILD_JOBS="$jobs" -v "$volume:/src" "$image" bash -lc '
 		set -eu
 		make -C /src defconfig
+		sed -i -e "/^CONFIG_GDB=/d" -e "/^# CONFIG_GDB is not set/d" /src/.config
+		printf "%s\\n" "# CONFIG_GDB is not set" >> /src/.config
 		make -C /src -j"$BUILD_JOBS" download
 		make -C /src -j"$BUILD_JOBS" target/linux/compile package/boot/uboot-rockchip/compile
 		make -C /src -j"$BUILD_JOBS" V=s
 	'
 else
 	make -C "$source_dir" defconfig
+	sed -i -e '/^CONFIG_GDB=/d' -e '/^# CONFIG_GDB is not set/d' "$source_dir/.config"
+	printf '%s\n' '# CONFIG_GDB is not set' >> "$source_dir/.config"
 	make -C "$source_dir" -j"$jobs" download
 	make -C "$source_dir" -j"$jobs" target/linux/compile package/boot/uboot-rockchip/compile
 	make -C "$source_dir" -j"$jobs" V=s

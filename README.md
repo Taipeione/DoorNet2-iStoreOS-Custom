@@ -7,14 +7,14 @@ Public firmware project for EmbedFire DoorNet2, an RK3399-based device.
 - Base: iStoreOS 24.10.8
 - Clean-install LAN: `192.168.100.1/24`
 - Hardware: DoorNet2 RK3399; board-specific DTS and U-Boot only
-- Optional services: PassWall, PassWall2, SmartDNS, and AdGuard Home, with safe disabled defaults
+- Optional services: PassWall, PassWall2, SmartDNS, and AdGuard Home are V0.1 acceptance targets; external feed availability is still being validated
 - OTA: retain user configuration and service enablement state; merge new settings idempotently
 
 ## Status
 
-The repository is initialized with the first board integration and source audit. The audit is in [`docs/hardware-audit.md`](docs/hardware-audit.md), the build procedure is in [`docs/build.md`](docs/build.md), and the V0.1 test matrix is in [`docs/test-matrix.md`](docs/test-matrix.md). No release exists and no real DoorNet2 hardware test has been performed.
+The repository contains the first board integration, a reproducible build path, and the `doornet2-base` policy package. The audit is in [`docs/hardware-audit.md`](docs/hardware-audit.md), the build procedure is in [`docs/build.md`](docs/build.md), and the V0.1 test matrix is in [`docs/test-matrix.md`](docs/test-matrix.md). No release exists and no real DoorNet2 hardware test has been performed.
 
-The audit found community DoorNet2 DTS/U-Boot material, but not enough verified information to claim a complete iStoreOS 24.10.8 image. Board variants and the exact production partition/boot image layout still require reconciliation.
+The audit found community DoorNet2 DTS/U-Boot material, but not enough verified information to claim a complete iStoreOS 24.10.8 image. Board variants and the exact production partition/boot image layout still require reconciliation. PassWall/PassWall2 and DNS integration remain blocked on reproducible iStoreOS feed/package inputs; the policy package deliberately does not start or stop optional services.
 
 Do not flash eMMC or alter a real device without explicit confirmation. Hardware claims must remain `NOT TESTED` until backed by reproducible real-device evidence.
 

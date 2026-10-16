@@ -1,0 +1,16 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+STOP=10
+
+start() {
+	/usr/libexec/doornet2-policy reconcile
+}
+
+reload() {
+	start
+}
+
+stop() {
+	return 0
+}

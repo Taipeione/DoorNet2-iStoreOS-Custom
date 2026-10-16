@@ -1,9 +1,13 @@
 # DoorNet2 V0.1 test matrix
 
-No real-device tests have been run. Every item is currently `NOT TESTED` unless a future report adds reproducible evidence.
+Static repository checks have passed. The kernel target has compiled in the Linux builder. U-Boot DoorNet2 and the complete image remain pending until their required upstream sources finish downloading. No real-device tests have been run. Every hardware or service item is `NOT TESTED` unless a future report adds reproducible evidence.
 
 | Area | Required check | Status |
 |---|---|---|
+| Build | Static V0.1 checks and shell syntax | PASS |
+| Build | RK3399 Linux target compile | PASS |
+| Build | DoorNet2 U-Boot target compile | IN PROGRESS |
+| Build | Complete DoorNet2 image and metadata | NOT TESTED |
 | Boot | Cold boot from MicroSD | NOT TESTED |
 | Boot | eMMC boot | NOT TESTED |
 | Network | Clean-install LAN `192.168.100.1/24` | NOT TESTED |

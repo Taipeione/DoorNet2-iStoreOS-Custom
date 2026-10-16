@@ -1,0 +1,29 @@
+#!/bin/sh
+
+set -eu
+
+action=${1:-reconcile}
+
+case "$action" in
+	reconcile)
+		# Policy only: never start, stop, or enable PassWall, PassWall2, DNS
+		# daemons, or any user-selected service. Their lifecycle belongs to the
+		# corresponding package and remains untouched across upgrades.
+		uci -q get doornet2.global >/dev/null 2>&1 || exit 0
+		uci -q get doornet2.global.lan_ipv4 >/dev/null 2>&1 || \
+			uci -q set doornet2.global.lan_ipv4='192.168.100.1'
+		uci -q get doornet2.global.lan_netmask >/dev/null 2>&1 || \
+			uci -q set doornet2.global.lan_netmask='255.255.255.0'
+		uci -q get doornet2.global.passwall_default >/dev/null 2>&1 || \
+			uci -q set doornet2.global.passwall_default='0'
+		uci -q get doornet2.global.passwall2_default >/dev/null 2>&1 || \
+			uci -q set doornet2.global.passwall2_default='0'
+		uci -q get doornet2.global.wechat_direct >/dev/null 2>&1 || \
+			uci -q set doornet2.global.wechat_direct='1'
+		uci -q commit doornet2
+		;;
+	*)
+		echo "usage: $0 reconcile" >&2
+		exit 2
+		;;
+esac

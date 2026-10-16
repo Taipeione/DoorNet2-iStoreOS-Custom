@@ -10,14 +10,14 @@ if [ -z "$source_dir" ] || [ ! -f "$source_dir/Makefile" ]; then
 fi
 
 kernel_dts="$source_dir/target/linux/rockchip/dts/rk3399"
-kernel_patches="$source_dir/target/linux/rockchip/patches-6.6"
 uboot_patches="$source_dir/package/boot/uboot-rockchip/patches"
-mkdir -p "$kernel_dts" "$kernel_patches" "$uboot_patches"
+policy_package="$source_dir/package/doornet2-base"
+mkdir -p "$kernel_dts" "$uboot_patches" "$policy_package"
 
 install -m 0644 "$repo_root/board/doorNet2/kernel/rk3399-doornet2.dtsi" "$kernel_dts/rk3399-doornet2.dtsi"
 install -m 0644 "$repo_root/board/doorNet2/kernel/rk3399-doornet2.dts" "$kernel_dts/rk3399-doornet2.dts"
-install -m 0644 "$repo_root/board/doorNet2/kernel/822-add-rk3399-doornet2-dtb.patch" "$kernel_patches/822-add-rk3399-doornet2-dtb.patch"
 install -m 0644 "$repo_root/board/doorNet2/uboot/303-rockchip-rk3399-Add-support-for-EmbedFire-DoorNet2.patch" "$uboot_patches/303-rockchip-rk3399-Add-support-for-EmbedFire-DoorNet2.patch"
+cp -R "$repo_root/package/doornet2-base/." "$policy_package/"
 
 python3 - "$source_dir" <<'PY'
 from pathlib import Path
@@ -89,6 +89,7 @@ endef
 
 """
 replace_once(uboot, "define U-Boot/nanopc-t4-rk3399\n", uboot_block + "define U-Boot/nanopc-t4-rk3399\n")
+replace_once(uboot, "UBOOT_TARGETS := \\\n", "UBOOT_TARGETS := \\\n  doornet2-rk3399 \\\n")
 PY
 
 printf '%s\n' "Applied DoorNet2 board support to $source_dir"

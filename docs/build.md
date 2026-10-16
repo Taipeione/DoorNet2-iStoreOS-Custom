@@ -6,4 +6,8 @@ On macOS, [`scripts/build-v0.1.sh`](../scripts/build-v0.1.sh) runs the build ins
 
 The local builder image is used only as a Linux build environment. No R76S board files, DTS, U-Boot configuration, partition layout, or network mapping are used by DoorNet2.
 
-The build script applies the reviewed board files, adds the DoorNet2 image/device definition, adds the U-Boot patch, sets the clean-install LAN to `192.168.100.1/24`, runs static checks, then compiles the kernel, U-Boot, and full image.
+The build script applies the reviewed board files, adds the DoorNet2 image/device definition, adds the U-Boot patch, installs the `doornet2-base` policy package, sets the clean-install LAN to `192.168.100.1/24`, runs static checks, then compiles the kernel, U-Boot, and full image.
+
+`doornet2-base` is intentionally conservative: its UCI defaults are additive, its upgrade keep list preserves network and service configuration, and its policy init script never starts or stops optional proxy/DNS services. PassWall/PassWall2, SmartDNS, and AdGuard Home must only be enabled after their exact iStoreOS feed revisions are pinned and their lifecycle is tested.
+
+The current source tarball does not contain the configured external feeds. A complete image build may therefore stop during feed/source download; that is a reproducibility blocker, not evidence of a board failure.

@@ -1,0 +1,13 @@
+/etc/config/network
+/etc/config/wireless
+/etc/config/dhcp
+/etc/config/firewall
+/etc/config/system
+/etc/config/ppp
+/etc/config/doornet2
+/etc/config/passwall
+/etc/config/passwall2
+/etc/config/smartdns
+/etc/config/AdGuardHome
+/etc/config/https-dns-proxy
+/etc/doornet2
