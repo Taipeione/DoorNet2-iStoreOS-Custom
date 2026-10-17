@@ -27,6 +27,7 @@ my @seeds;
 while (my $line = <$seed_fh>) {
     chomp $line;
     $line =~ s/\s+#.*$//;
+    next if $line =~ /^\s*#/;
     next if $line =~ /^\s*$/;
     die "invalid package name in $seed_file: $line\n"
         unless $line =~ /^[A-Za-z0-9][A-Za-z0-9+_.-]*$/;
