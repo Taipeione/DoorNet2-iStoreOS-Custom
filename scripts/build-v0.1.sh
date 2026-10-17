@@ -67,10 +67,21 @@ for package in u-boot-easepi-rk3528 u-boot-easepi-rk3568 u-boot-easepi-rk3568-rk
 	sed -i "/^CONFIG_PACKAGE_${package}=/d" "$source_dir/.config"
 	printf '# CONFIG_PACKAGE_%s is not set\n' "$package" >> "$source_dir/.config"
 done
+make -C "$source_dir" defconfig
+if grep -q '^CONFIG_PACKAGE_dnsmasq=y$' "$source_dir/.config"; then
+	echo 'defconfig re-enabled conflicting dnsmasq; refusing an ambiguous configuration.' >&2
+	exit 1
+fi
+for package in u-boot-easepi-rk3528 u-boot-easepi-rk3568 u-boot-easepi-rk3568-rk809 u-boot-easepi-rk3576 u-boot-easepi-rk3588; do
+	if grep -q "^CONFIG_PACKAGE_${package}=y$" "$source_dir/.config"; then
+		printf 'defconfig re-enabled unrelated U-Boot package %s; refusing an ambiguous configuration.\n' "$package" >&2
+		exit 1
+	fi
+done
 
 make -C "$source_dir" -j"$jobs" download
-make -C "$source_dir" -j"$jobs" target/linux/compile
-make -C "$source_dir" -j"$jobs" package/boot/uboot-rockchip/compile BUILD_VARIANT=doornet2-rk3399
+make -C "$source_dir" -j"$jobs" V="${BUILD_VERBOSE:-}" target/linux/compile
+make -C "$source_dir" -j"$jobs" V="${BUILD_VERBOSE:-}" package/boot/uboot-rockchip/compile BUILD_VARIANT=doornet2-rk3399
 make -C "$source_dir" -j"$jobs" V="${BUILD_VERBOSE:-}"
 
 output_dir=${BUILD_OUTPUT_DIR:-"$repo_root/work/build-output"}
