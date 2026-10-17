@@ -16,6 +16,8 @@ This public repository is the DoorNet2 RK3399 firmware project. The project vers
 
 ## Build and review
 
+**Permanent build rule:** Every DoorNet2 firmware compilation must run in GitHub Actions on a GitHub-hosted runner. Do not compile firmware on the Mac, local Linux, or local Docker. The repository is intentionally public; do not change its visibility. Use the independent DoorNet2 `V0.1`, `V0.2`, `V0.3` version sequence. The formal build script must refuse execution outside the authorized GitHub-hosted Actions repository context. Local work is limited to development, static checks, GitHub operations, and inspection of cloud logs/artifacts.
+
 Every change must be checked against the target iStoreOS/kernel/U-Boot versions, DTS compilation, image layout, default LAN, platform name, DTB, boot files, and SHA256 metadata. Review `git diff` for secrets, debug residue, and unintended files; commit reliable stages with descriptive messages and push `origin/main`.
 
 Release names, firmware filenames, build metadata, OTA metadata, and documentation must identify the same DoorNet2 version (`V0.1`, then `V0.2`, etc.). If memory variant, PHY, partition map, or bootloader behavior is uncertain, document it and stop the related hardware change instead of guessing.

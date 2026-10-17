@@ -1,21 +1,22 @@
 # DoorNet2 V0.1 test matrix
 
-Repository/static checks, pinned-feed resolution, and full image construction have passed. No real-device tests have been run, so image construction is not hardware acceptance and does not authorize flashing. Build-time/static checks are deliberately separate from service runtime and hardware acceptance.
+This matrix distinguishes source checks from cloud compilation and hardware acceptance. The ext4/squashfs images previously found in ignored `work/build-output` were built locally with Docker. They are historical artifacts, not GitHub Actions results, and do not satisfy the permanent cloud-build requirement. Until a matching Actions run and artifact are verified, cloud build rows remain NOT TESTED. No real-device tests have been run.
 
 | Area | Required check | Status |
 |---|---|---|
 | Build | Static V0.1 checks and shell syntax | PASS |
-| Build | Pinned feed update/install and `make defconfig` resolves DoorNet2 V0.1 selections | PASS |
-| Build | ARM64 Go external bootstrap checksum and Go host toolchain compile | PASS |
-| Build | RK3399 Linux target compile | PASS |
-| Build | DoorNet2 U-Boot target compile, including SPL/TPL and DTB | PASS |
-| Build | Complete DoorNet2 image and metadata (ext4 and squashfs sysupgrade artifacts) | PASS |
-| Build | Image SHA256 matches generated `sha256sums` and `profiles.json` metadata | PASS |
-| Build | Image target/profile/version: `embedfire,doornet2`, RK3399, DoorNet2 V0.1 | PASS |
-| Build | Full-image package installation including dnsmasq-full, Argon, and selected optional services | PASS |
-| Build | Latest full build log reviewed: no fatal make error; nonfatal feed/configuration warnings documented | PASS |
-| Policy | Isolated built-rootfs UCI test: WeChatDirect merge, mapping preservation, disabled defaults, and repeat idempotence | PASS |
-| Policy | Reconciler preserves user LAN value and PassWall/PassWall2 enabled/disabled toggles | PASS |
+| Build | GitHub-hosted runner checked out and recorded exact DoorNet2 repository commit | NOT TESTED |
+| Build | Pinned feed update/install and `make defconfig` resolves DoorNet2 V0.1 selections in cloud | NOT TESTED |
+| Build | RK3399 Linux target compile in GitHub Actions | NOT TESTED |
+| Build | DoorNet2 U-Boot target compile, including SPL/TPL and DTB, in GitHub Actions | NOT TESTED |
+| Build | Complete cloud DoorNet2 image and metadata (ext4 and squashfs sysupgrade artifacts) | NOT TESTED |
+| Build | Cloud image SHA256 matches generated `sha256sums` and `profiles.json` metadata | NOT TESTED |
+| Build | Cloud image target/profile/version: `embedfire,doornet2`, RK3399, DoorNet2 V0.1 | NOT TESTED |
+| Build | Cloud full-image package installation including dnsmasq-full, Argon, and selected optional services | NOT TESTED |
+| Build | Cloud build log reviewed; failures and warnings classified | NOT TESTED |
+| Policy | Cloud built-rootfs UCI test: WeChatDirect merge, mapping preservation, disabled defaults, and repeat idempotence | NOT TESTED |
+| Policy | Cloud reconciler test preserves user LAN value and PassWall/PassWall2 toggles | NOT TESTED |
+| Historical | Previous local Docker image build and policy test (not a cloud result; excluded from acceptance) | PASS (LOCAL ONLY) |
 | Build | Resolved config includes PassWall, PassWall2, SmartDNS, LuCI SmartDNS, AdGuard Home, ChinaDNS-NG | PASS |
 | Defaults | PassWall and PassWall2 shipped default configs set `enabled=0` | PASS |
 | Defaults | SmartDNS shipped UCI default sets `enabled=0` | PASS |

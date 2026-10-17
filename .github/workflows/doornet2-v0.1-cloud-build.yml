@@ -1,0 +1,145 @@
+name: DoorNet2 V0.1 Cloud Firmware Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: doornet2-v0.1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  firmware:
+    name: Full RK3399 firmware (GitHub-hosted)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      BUILD_JOBS: 3
+      BUILD_OUTPUT_DIR: ${{ github.workspace }}/work/cloud-artifacts
+
+    steps:
+      - name: Check out exact repository commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Record build identity and reclaim ephemeral runner space
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p work
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "commit=$(git rev-parse HEAD)"
+            echo "ref=${GITHUB_REF}"
+            echo "runner=${RUNNER_NAME} (${RUNNER_ENVIRONMENT})"
+            echo "started_utc=$(date -u +%FT%TZ)"
+          } | tee work/cloud-build-identity.txt
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          # Remove unused preinstalled SDKs from this disposable GitHub VM only.
+          sudo rm -rf /usr/local/lib/android /opt/ghc /usr/share/dotnet /usr/local/share/powershell /usr/local/share/chromium
+          sudo apt-get clean
+          df -h "$GITHUB_WORKSPACE"
+
+      - name: Install iStoreOS/OpenWrt build dependencies
+        shell: bash
+        run: |
+          set -o pipefail
+          sudo apt-get update 2>&1 | tee -a work/cloud-build.log
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext \
+            git libncurses-dev libssl-dev rsync unzip zlib1g-dev file wget curl \
+            xsltproc swig time python3 python3-setuptools python3-pyelftools \
+            python3-yaml python3-requests libelf-dev device-tree-compiler \
+            patch perl tar gzip xz-utils zstd cpio qemu-utils qemu-user-static binfmt-support 2>&1 | tee -a work/cloud-build.log
+          sudo update-binfmts --enable qemu-aarch64 2>&1 | tee -a work/cloud-build.log
+          sudo apt-get clean
+          df -h "$GITHUB_WORKSPACE"
+
+      - name: Precheck source pins and DoorNet2 board integration
+        shell: bash
+        run: |
+          set -o pipefail
+          # shellcheck disable=SC1091
+          source config/source.env
+          mkdir -p work
+          git clone --filter=blob:none --no-checkout "$ISTOREOS_REPOSITORY" work/istoreos
+          git -C work/istoreos fetch --depth=1 origin "$ISTOREOS_COMMIT"
+          git -C work/istoreos checkout --detach FETCH_HEAD
+          test "$(git -C work/istoreos rev-parse HEAD)" = "$ISTOREOS_COMMIT"
+          {
+            scripts/apply-board-support.sh "$GITHUB_WORKSPACE/work/istoreos"
+            scripts/verify-v0.1.sh "$GITHUB_WORKSPACE/work/istoreos"
+            grep -q '192\.168\.100\.1' configs/doorNet2-v0.1.config
+            ! grep -q '192\.168\.50\.1' configs/doorNet2-v0.1.config
+            grep -q '^CONFIG_VERSION_NUMBER="V0.1"$' configs/doorNet2-v0.1.config
+            grep -q '^CONFIG_VERSION_CODE="DoorNet2-V0.1"$' configs/doorNet2-v0.1.config
+            git -C work/istoreos status --short
+          } 2>&1 | tee -a work/cloud-build.log
+
+      - name: Compile complete firmware and target policy integration test
+        id: full_build
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p work
+          scripts/build-v0.1.sh "$GITHUB_WORKSPACE/work/istoreos" 2>&1 | tee -a work/cloud-build.log
+
+      - name: Verify firmware images and write cloud provenance
+        id: artifact_check
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          scripts/verify-cloud-artifacts-v0.1.sh "$BUILD_OUTPUT_DIR" "$GITHUB_SHA" 2>&1 | tee -a work/cloud-build.log
+          cp work/cloud-build-identity.txt "$BUILD_OUTPUT_DIR/"
+          sha256sum "$BUILD_OUTPUT_DIR"/*sysupgrade.img.gz | tee "$BUILD_OUTPUT_DIR/image-sha256sums.txt"
+          {
+            echo "### DoorNet2 V0.1 cloud firmware build: PASS"
+            echo
+            echo "- Repository commit: `$GITHUB_SHA`"
+            echo "- Runner: GitHub-hosted `ubuntu-24.04`"
+            echo "- Target: `rockchip/armv8/embedfire_doornet2` (RK3399)"
+            echo "- Source: iStoreOS commit `$(git -C work/istoreos rev-parse HEAD)`"
+            echo "- Version: `DoorNet2-V0.1`; Linux `6.6.144`"
+            echo "- Images: ext4 and squashfs sysupgrade; see artifact checksums below."
+            echo
+            echo '```text'
+            cat "$BUILD_OUTPUT_DIR/image-sha256sums.txt"
+            echo '```'
+            echo
+            echo 'This is a successful cloud compile and artifact check only. Device boot, service lifecycle, DNS runtime, OTA restore, and hardware acceptance remain NOT TESTED.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preserve build logs, identity, and any generated artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: doornet2-v0.1-${{ github.sha }}-run-${{ github.run_id }}
+          path: |
+            work/cloud-build.log
+            work/cloud-build-identity.txt
+            work/cloud-artifacts/
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 0
+
+      - name: Summarize failed or incomplete build
+        if: always() && (steps.full_build.outcome != 'success' || steps.artifact_check.outcome != 'success')
+        shell: bash
+        run: |
+          {
+            echo '### DoorNet2 V0.1 cloud firmware build: NOT PASSED'
+            echo
+            echo "- Repository commit: `$GITHUB_SHA`"
+            echo "- Full build step: `${{ steps.full_build.outcome }}`"
+            echo "- Artifact verification step: `${{ steps.artifact_check.outcome }}`"
+            echo '- Build log and any partial artifacts are attached to this run as an Actions Artifact.'
+            echo '- No local build is used as a substitute for this result.'
+          } >> "$GITHUB_STEP_SUMMARY"
