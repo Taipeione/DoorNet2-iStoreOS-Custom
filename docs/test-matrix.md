@@ -7,7 +7,7 @@ This matrix distinguishes source checks from cloud compilation and hardware acce
 | Build | Static V0.1 checks and shell syntax | PASS |
 | Build | GitHub-hosted runner checked out and recorded exact DoorNet2 repository commit | PASS (run 38993536280) |
 | Build | Cloud static Precheck | FAIL (run 38993536280: runner lacked `ripgrep`; fixed in follow-up commit; compilation not reached) |
-| Build | Pinned feed update/install and `make defconfig` resolves DoorNet2 V0.1 selections in cloud | NOT TESTED |
+| Build | Pinned feed update/install and `make defconfig` resolves DoorNet2 V0.1 selections in cloud | FAIL (run 38993725481: third feed pin was 39 characters; corrected and exact HEAD verification added) |
 | Build | RK3399 Linux target compile in GitHub Actions | NOT TESTED |
 | Build | DoorNet2 U-Boot target compile, including SPL/TPL and DTB, in GitHub Actions | NOT TESTED |
 | Build | Complete cloud DoorNet2 image and metadata (ext4 and squashfs sysupgrade artifacts) | NOT TESTED |

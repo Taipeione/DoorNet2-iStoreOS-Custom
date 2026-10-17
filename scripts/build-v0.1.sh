@@ -32,6 +32,23 @@ cp "$repo_root/configs/doorNet2-v0.1.config" "$source_dir/.config"
 
 jobs=${BUILD_JOBS:-2}
 "$source_dir/scripts/feeds" update -a
+while read -r feed_type feed_name feed_source; do
+	case "$feed_type" in
+		''|\#*) continue ;;
+		src-git*) ;;
+		*) printf 'Unsupported feed declaration: %s\n' "$feed_type" >&2; exit 1 ;;
+	esac
+	expected_commit=${feed_source##*^}
+	if [ "$expected_commit" = "$feed_source" ] || [ "${#expected_commit}" -ne 40 ]; then
+		printf 'Feed %s does not have a full 40-character pinned commit.\n' "$feed_name" >&2
+		exit 1
+	fi
+	actual_commit=$(git -C "$source_dir/feeds/$feed_name" rev-parse HEAD)
+	if [ "$actual_commit" != "$expected_commit" ]; then
+		printf 'Feed %s pin mismatch: expected %s, got %s\n' "$feed_name" "$expected_commit" "$actual_commit" >&2
+		exit 1
+	fi
+done < "$repo_root/config/feeds.conf"
 if grep -q '^PKG_VERSION:=0.2.6$' "$source_dir/feeds/passwall_packages/geoview/Makefile"; then
 	patch -d "$source_dir" -p1 < "$repo_root/board/doorNet2/feeds/0001-geoview-go123-compatible.patch"
 elif ! grep -q '^PKG_VERSION:=0.1.10$' "$source_dir/feeds/passwall_packages/geoview/Makefile" || \
