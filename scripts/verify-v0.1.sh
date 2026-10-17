@@ -50,6 +50,7 @@ check rg -F -q '"version": "$(call json_quote,$(VERSION_CODE))",' "$source_dir/i
 check rg -q 'DEFAULT:=n' "$source_dir/package/boot/uboot-rk35xx/Makefile"
 check rg -q 'CONFIG_PACKAGE_luci-app-passwall=y' "$repo_root/configs/doorNet2-v0.1.config"
 check rg -q 'CONFIG_PACKAGE_luci-app-passwall2=y' "$repo_root/configs/doorNet2-v0.1.config"
+check rg -q 'CONFIG_PACKAGE_dnsmasq-full=y' "$repo_root/configs/doorNet2-v0.1.config"
 check rg -q 'CONFIG_PACKAGE_smartdns=y' "$repo_root/configs/doorNet2-v0.1.config"
 check rg -q 'CONFIG_PACKAGE_luci-app-smartdns=y' "$repo_root/configs/doorNet2-v0.1.config"
 check rg -q 'CONFIG_PACKAGE_adguardhome=y' "$repo_root/configs/doorNet2-v0.1.config"

@@ -81,6 +81,12 @@ for package in u-boot-easepi-rk3528 u-boot-easepi-rk3568 u-boot-easepi-rk3568-rk
 		exit 1
 	fi
 done
+for package in dnsmasq-full luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng; do
+	if ! grep -q "^CONFIG_PACKAGE_${package}=y$" "$source_dir/.config"; then
+		printf 'defconfig dropped required DoorNet2 package %s; refusing an incomplete plugin build.\n' "$package" >&2
+		exit 1
+	fi
+done
 
 make -C "$source_dir" -j"$jobs" download
 # target/linux/compile is invoked explicitly for early board/kernel diagnostics;
