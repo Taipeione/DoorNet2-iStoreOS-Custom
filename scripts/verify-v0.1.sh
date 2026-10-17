@@ -65,6 +65,10 @@ for unrelated in u-boot-easepi-rk3528 u-boot-easepi-rk3576 u-boot-easepi-rk3568 
 done
 check rg -q 'CONFIG_DEFAULT_DEVICE_TREE="rk3399-doornet2"' "$repo_root/board/doorNet2/uboot/303-rockchip-rk3399-Add-support-for-EmbedFire-DoorNet2.patch"
 check rg -q 'CONFIG_DEFAULT_FDT_FILE="rk3399-doornet2.dtb"' "$repo_root/board/doorNet2/uboot/303-rockchip-rk3399-Add-support-for-EmbedFire-DoorNet2.patch"
+check rg -F -q 'CONFIG_SPL_PAD_TO=0x7f8000' "$repo_root/board/doorNet2/uboot/303-rockchip-rk3399-Add-support-for-EmbedFire-DoorNet2.patch"
+check rg -F -q '#include "rk3399-sdram-ddr3-1866.dtsi"' "$repo_root/board/doorNet2/uboot/303-rockchip-rk3399-Add-support-for-EmbedFire-DoorNet2.patch"
+check_not rg -F -q 'CONFIG_RAM_RK3399_LPDDR4=y' "$repo_root/board/doorNet2/uboot/303-rockchip-rk3399-Add-support-for-EmbedFire-DoorNet2.patch"
+check_not rg -F -q 'rk3399-sdram-lpddr4' "$repo_root/board/doorNet2/uboot/303-rockchip-rk3399-Add-support-for-EmbedFire-DoorNet2.patch"
 check rg -q '# CONFIG_OF_UPSTREAM is not set' "$repo_root/board/doorNet2/uboot/303-rockchip-rk3399-Add-support-for-EmbedFire-DoorNet2.patch"
 check rg -q 'TARGET_DEVICES \+= embedfire_doornet2' "$source_dir/target/linux/rockchip/image/armv8.mk"
 check rg -q 'doornet2-rk3399' "$source_dir/package/boot/uboot-rockchip/Makefile"

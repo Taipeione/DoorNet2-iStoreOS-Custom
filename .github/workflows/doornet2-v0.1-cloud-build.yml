@@ -111,8 +111,10 @@ jobs:
           | Static DoorNet2 RK3399 Precheck | PASS |
           | Complete cloud firmware build, including U-Boot and ext4/squashfs images | PASS |
           | Image gzip CRC, fwtool OTA metadata, MBR layout, SHA256 and required package manifest | PASS |
+          | 1 GB DDR3L U-Boot configuration and expected SPL/FIT image offsets | PASS |
           | Built-rootfs firmware identity, default LAN board script and emulated idempotent WeChatDirect policy merge | PASS |
           | Real DoorNet2 boot from MicroSD or eMMC | NOT TESTED |
+          | DDR3L training and loader execution on the owner's physical board | NOT TESTED |
           | Physical Ethernet, LAN reachability, LuCI and SSH | NOT TESTED |
           | PassWall, PassWall2, SmartDNS, AdGuard Home and ChinaDNS-NG runtime lifecycle | NOT TESTED |
           | DNS, WeChatDirect routing and OTA restore on real hardware | NOT TESTED |

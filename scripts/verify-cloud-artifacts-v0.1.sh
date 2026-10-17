@@ -91,7 +91,11 @@ assert metadata.get("version", {}).get("version") == "DoorNet2-V0.1", metadata
 assert "embedfire,doornet2" in metadata.get("supported_devices", []), metadata
 with gzip.open(image_path, "rb") as f:
     header = f.read(65536)
+    f.seek(0x4000 * 512)
+    fit_magic = f.read(4)
 assert len(header) == 65536 and header[510:512] == b"\x55\xaa", "Missing MBR disk image"
+assert any(header[64 * 512:65 * 512]), "Missing RK3399 idbloader at sector 64"
+assert fit_magic == b"\xd0\x0d\xfe\xed", "Missing U-Boot FIT at sector 0x4000"
 first_partition = struct.unpack_from("<I", header, 446 + 8)[0]
 assert first_partition == 32768, f"Unexpected boot partition start: {first_partition}"
 identified = subprocess.check_output(["file", "-"], input=header, text=False).decode().strip()
@@ -127,6 +131,8 @@ commit=$commit_sha
 run_number=${GITHUB_RUN_NUMBER:-unknown}
 run_url=${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-Taipeione/DoorNet2-iStoreOS-Custom}/actions/runs/${GITHUB_RUN_ID:-unknown}
 target=rockchip/armv8/embedfire_doornet2
+target_memory=1GB DDR3L DoorNet2 only
+hardware_boot=NOT TESTED
 source_commit=$(awk -F= '$1 == "ISTOREOS_COMMIT" {print $2}' "$repo_root/config/source.env")
 kernel=6.6.144
 images=ext4,squashfs sysupgrade gzip
