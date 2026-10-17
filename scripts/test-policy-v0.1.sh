@@ -21,6 +21,9 @@ release_description=$(sed -n "s/^DISTRIB_DESCRIPTION=//p" "$rootfs/etc/openwrt_r
 	echo "Unexpected firmware display name: $release_description" >&2
 	exit 1
 }
+grep -Fq 'json_add_string ipaddr 192.168.100.1' "$rootfs/etc/board.d/99-lan-ip"
+grep -Fq 'json_add_string netmask 255.255.255.0' "$rootfs/etc/board.d/99-lan-ip"
+grep -Fq 'pi_ip="192.168.100.1"' "$rootfs/lib/preinit/00_preinit.conf"
 
 test_root=$(mktemp -d "${TMPDIR:-/tmp}/doornet2-policy-test.XXXXXX")
 trap 'rm -rf "$test_root"' EXIT HUP INT TERM

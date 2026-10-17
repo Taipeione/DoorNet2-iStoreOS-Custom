@@ -110,6 +110,12 @@ if grep -E -q 'R76S|RK3576|r76s|rk3576' "$manifest"; then
 	echo 'FAIL: unrelated R76S/RK3576 package detected in firmware manifest' >&2
 	exit 1
 fi
+for package in doornet2-base luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng dnsmasq-full luci-theme-argon; do
+	if ! grep -E -q "^${package} - " "$manifest"; then
+		printf 'FAIL: required firmware package missing from manifest: %s\n' "$package" >&2
+		exit 1
+	fi
+done
 
 cat > "$artifact_dir/DoorNet2-V0.1-BuildInfo.txt" <<EOF
 formal_name=DoorNet2-V0.1
@@ -126,4 +132,4 @@ kernel=6.6.144
 images=ext4,squashfs sysupgrade gzip
 EOF
 sha256sum "$artifact_dir"/*sysupgrade.img.gz
-printf '%s\n' 'PASS: cloud artifacts, profile, image formats, checksums, version and target verified.'
+printf '%s\n' 'PASS: cloud artifacts, required packages, profile, image formats, checksums, version and target verified.'

@@ -101,13 +101,33 @@ jobs:
           set -euo pipefail
           scripts/verify-cloud-artifacts-v0.1.sh "$BUILD_OUTPUT_DIR" "$GITHUB_SHA" 2>&1 | tee -a work/cloud-build.log
           cp work/cloud-build-identity.txt "$BUILD_OUTPUT_DIR/"
+          printf '%s\n' 'DoorNet2-V0.1' > "$BUILD_OUTPUT_DIR/DoorNet2-V0.1-Version.txt"
+          cat > "$BUILD_OUTPUT_DIR/DoorNet2-V0.1-Test-Matrix.md" <<'EOF'
+          # DoorNet2-V0.1 cloud test matrix
+
+          | Check | Result |
+          |---|---|
+          | Exact GitHub-hosted runner commit and pinned source | PASS |
+          | Static DoorNet2 RK3399 Precheck | PASS |
+          | Complete cloud firmware build, including U-Boot and ext4/squashfs images | PASS |
+          | Image gzip CRC, fwtool OTA metadata, MBR layout, SHA256 and required package manifest | PASS |
+          | Built-rootfs firmware identity, default LAN board script and emulated idempotent WeChatDirect policy merge | PASS |
+          | Real DoorNet2 boot from MicroSD or eMMC | NOT TESTED |
+          | Physical Ethernet, LAN reachability, LuCI and SSH | NOT TESTED |
+          | PassWall, PassWall2, SmartDNS, AdGuard Home and ChinaDNS-NG runtime lifecycle | NOT TESTED |
+          | DNS, WeChatDirect routing and OTA restore on real hardware | NOT TESTED |
+
+          No real-device flashing or eMMC modification was performed by this workflow.
+          EOF
           (
             cd "$BUILD_OUTPUT_DIR"
             sha256sum \
               DoorNet2-V0.1-*-sysupgrade.img.gz \
               DoorNet2-V0.1-*.manifest \
               profiles.json \
-              DoorNet2-V0.1-BuildInfo.txt
+              DoorNet2-V0.1-BuildInfo.txt \
+              DoorNet2-V0.1-Version.txt \
+              DoorNet2-V0.1-Test-Matrix.md
           ) | tee "$BUILD_OUTPUT_DIR/DoorNet2-V0.1-SHA256SUMS"
           {
             echo "### DoorNet2-V0.1 cloud firmware build: PASS"
