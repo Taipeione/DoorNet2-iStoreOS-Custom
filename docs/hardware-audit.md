@@ -17,18 +17,19 @@ Audit started 2026-10-16. This is an evidence record, not a hardware acceptance 
 | Ethernet | Sources describe the SoC GMAC path and a PCIe Realtek path; one source uses `realtek,r8168`, another models an RTL8211F GMAC PHY. | Mapping/PHY/port labels require confirmation. |
 | LEDs/key | Sources map system, LAN, WAN LEDs and reset GPIOs. | Source-level evidence only. |
 | iStoreOS | Official repository has an active `istoreos-24.10` line. `DoorNet2-V0.1` is pinned to commit `a405f0378aef729f0f250c94b18a34a09b7d8890` (24.10.8 release line); code search found no DoorNet2 support in the official tree. | Base pin recorded; DoorNet2 integration is in this repository. Full cloud image construction has not passed. |
+| External reference image | The supplied `beggar-embedfire_doornet2-squashfs-sysupgrade.img.gz` was forensically checked: one gzip member plus 805 bytes of fwtool/ucert tail, MBR, U-Boot TPL/SPL 2022.07, Linux 6.1.50, and `embedfire_doornet2` FIT/DTS evidence. | Board identity and boot-chain evidence confirmed; it is not a DoorNet2-V0.1 build and is not copied or used as a release input. See [`reference-firmware-audit.md`](reference-firmware-audit.md). |
 
 ## Open items
 
 1. The intended hardware is specifically 1 GB DDR3L. The firmware must not be described as suitable for the separate LPDDR4 variant. DDR3 training timings and real boot remain unverified.
 2. Community DTS revisions differ in PHY modeling and PCIe link parameters; they cannot be merged blindly.
-3. The generic Rockchip image recipe uses an MBR and fixed loader positions; vendor stock-image compatibility and production partition details remain unverified. Image structural checks cannot substitute for a boot test.
+3. The reference image uses an MBR with boot partition start at 32 MiB and rootfs start at 96 MiB, while the current project has a separate iStoreOS image recipe. Vendor stock-image compatibility and production partition details for the current build remain unverified. Image structural checks cannot substitute for a boot test.
 4. Physical WAN/LAN naming must come from the actual board and boot logs, not LED labels alone.
 5. No real-device serial log, target-kernel `dtc` result, boot test, network test, or eMMC/TF test exists yet.
 
 ## Decision
 
-Do not claim `DoorNet2-V0.1` readiness or create a formal release yet. Earlier in-flight cloud runs use an ambiguous U-Boot memory configuration and lack the new loader-layout gate; the corrected DDR3L/SPL layout has not passed a full cloud build or real boot test. Even a successful structural image check is not real-device acceptance. Partition and bootloader behavior, physical-device startup, service lifecycles, and OTA retention remain open. Do not write the image to eMMC or alter partitions without separate user confirmation.
+Do not claim `DoorNet2-V0.1` readiness or create a formal release yet. The external reference confirms the RK3399 board and a DDR3-era U-Boot/FIT chain, but its 192.168.11.1 default, 2023-era software, and different partition map cannot be adopted. The corrected DDR3L/SPL layout still requires a passing full cloud build and real boot test. Even a successful structural image check is not real-device acceptance. Partition and bootloader behavior, physical-device startup, service lifecycles, and OTA retention remain open. Do not write the image to eMMC or alter partitions without separate user confirmation.
 
 ## References
 

@@ -20,6 +20,8 @@ This matrix distinguishes source checks from cloud compilation and hardware acce
 | Version | Firmware `/etc/openwrt_release` display, OTA UCI version metadata, artifact/BuildInfo/checksum prefixes all exactly `DoorNet2-V0.1` | NOT TESTED (naming changes await successful cloud artifact verification) |
 | Build | Cloud full-image package installation including dnsmasq-full, Argon, and selected optional services | NOT TESTED |
 | Build | Cloud build logs reviewed; failures and warnings classified and retained | PASS (runs 38993536280 through 38995835630) |
+| Reference audit | User-supplied reference gzip/member, fwtool tail, MBR, U-Boot/FIT, Linux, rootfs, packages, network generation, and upgrade script inspected | PASS (read-only forensic audit; no hardware acceptance) |
+| Reference compatibility | Reference LAN and partition data are not copied into DoorNet2-V0.1 without validation | PASS (192.168.11.1/24 and the different 32 MiB/96 MiB map were correctly rejected) |
 | Policy | Cloud built-rootfs UCI test: WeChatDirect merge, mapping preservation, disabled defaults, and repeat idempotence | NOT TESTED |
 | Policy | Cloud reconciler test preserves user LAN value and PassWall/PassWall2 toggles | NOT TESTED |
 | Historical | Previous local Docker image build and policy test (not a cloud result; excluded from acceptance) | PASS (LOCAL ONLY) |
