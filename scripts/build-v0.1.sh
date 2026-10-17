@@ -80,6 +80,9 @@ for package in u-boot-easepi-rk3528 u-boot-easepi-rk3568 u-boot-easepi-rk3568-rk
 done
 
 make -C "$source_dir" -j"$jobs" download
+# target/linux/compile is invoked explicitly for early board/kernel diagnostics;
+# prepare OpenWrt host tools first so Kconfig generators (notably m4) exist.
+make -C "$source_dir" -j"$jobs" tools/install
 make -C "$source_dir" -j"$jobs" V="${BUILD_VERBOSE:-}" target/linux/compile
 make -C "$source_dir" -j"$jobs" V="${BUILD_VERBOSE:-}" package/boot/uboot-rockchip/compile BUILD_VARIANT=doornet2-rk3399
 make -C "$source_dir" -j"$jobs" V="${BUILD_VERBOSE:-}"

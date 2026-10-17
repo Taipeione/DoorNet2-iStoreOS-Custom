@@ -7,7 +7,7 @@ This matrix distinguishes source checks from cloud compilation and hardware acce
 | Build | Static V0.1 checks and shell syntax | PASS |
 | Build | GitHub-hosted runner checked out and recorded exact DoorNet2 repository commit | PASS (run 38993536280) |
 | Build | Cloud static Precheck | FAIL (run 38993536280: runner lacked `ripgrep`; fixed in follow-up commit; compilation not reached) |
-| Build | Full cloud compile after naming corrections | FAIL (run 38994612587 re-enabled RK3528 U-Boot; run 38995074665 then exposed RK3568 U-Boot defaults; targeted default opt-outs are committed for next cloud retest) |
+| Build | Full cloud compile after naming corrections | FAIL (run 38994612587 re-enabled RK3528 U-Boot; run 38995074665 exposed RK3568 defaults; run 38995399526 reached Linux compile but lacked host `m4`; targeted U-Boot default opt-outs and explicit `tools/install` are committed for retest) |
 | Build | Pinned feeds update and each checked-out HEAD matches the configured 40-character revision | PASS (run 38994050512) |
 | Build | Final `make defconfig` is in sync after DoorNet2 package exclusions | FAIL (run 38994050512 warned configuration was out of sync; second defconfig and resolved-option assertions added) |
 | Build | RK3399 Linux target compile in GitHub Actions | FAIL (run 38994050512: target step exited with `.config` out-of-sync warning; no image produced) |
