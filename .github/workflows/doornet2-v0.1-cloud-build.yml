@@ -4,6 +4,9 @@ run-name: "DoorNet2-V0.1 #${{ github.run_number }}"
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
   workflow_dispatch:
 
 permissions:
@@ -84,6 +87,12 @@ jobs:
             grep -q '^CONFIG_VERSION_CODE="DoorNet2-V0.1"$' configs/doorNet2-v0.1.config
             git -C work/istoreos status --short
           } 2>&1 | tee -a work/cloud-build.log
+
+      - name: Restore verified source-download cache
+        uses: actions/cache@v4
+        with:
+          path: work/istoreos/dl
+          key: doornet2-v0.1-downloads-${{ runner.os }}-${{ hashFiles('config/source.env', 'config/feeds.conf') }}
 
       - name: Compile complete firmware and target policy integration test
         id: full_build

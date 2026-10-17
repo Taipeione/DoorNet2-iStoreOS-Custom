@@ -84,31 +84,29 @@ done
 # iStoreOS' second defconfig normalizes the base target configuration but can
 # clear feed-provided package selections after their Makefiles are installed.
 # Re-apply the reviewed DoorNet2 package set after that normalization so the
-# final .config is the actual image input. Re-apply the direct runtime
-# dependencies declared by the pinned PassWall feeds, including lyaml's
-# libyaml dependency, as well: the feed packages are selected after the final
-# defconfig, so relying on Kconfig to pull this closure in would produce ipks
-# with unresolved dependencies.
-for package in \
-	libopenssl dnsmasq-full luci-app-passwall luci-app-passwall2 smartdns \
-	luci-app-smartdns adguardhome chinadns-ng \
-	coreutils coreutils-base64 coreutils-nohup coreutils-timeout curl \
-	dns2socks geoview ip-full libuci-lua libyaml lua luci-compat luci-lib-jsonc \
-	lyaml microsocks resolveip tcping unzip v2ray-geoip v2ray-geosite; do
+# final .config is the actual image input. The associated cloud-only metadata
+# precheck below resolves and verifies unconditional runtime dependencies
+# before the expensive complete build begins.
+required_packages_file="$repo_root/config/required-packages-v0.1.txt"
+while IFS= read -r package; do
+	case "$package" in ''|\#*) continue ;; esac
 	sed -i "/^CONFIG_PACKAGE_${package}=/d" "$source_dir/.config"
 	printf 'CONFIG_PACKAGE_%s=y\n' "$package" >> "$source_dir/.config"
-done
-for package in \
-	libopenssl dnsmasq-full luci-app-passwall luci-app-passwall2 smartdns \
-	luci-app-smartdns adguardhome chinadns-ng \
-	coreutils coreutils-base64 coreutils-nohup coreutils-timeout curl \
-	dns2socks geoview ip-full libuci-lua libyaml lua luci-compat luci-lib-jsonc \
-	lyaml microsocks resolveip tcping unzip v2ray-geoip v2ray-geosite; do
+	done < "$required_packages_file"
+while IFS= read -r package; do
+	case "$package" in ''|\#*) continue ;; esac
 	if ! grep -q "^CONFIG_PACKAGE_${package}=y$" "$source_dir/.config"; then
 		printf 'defconfig dropped required DoorNet2 package %s; refusing an incomplete plugin build.\n' "$package" >&2
 		exit 1
 	fi
-done
+	done < "$required_packages_file"
+
+# Generate exact pinned package metadata and fail early if the final manual
+# selection omitted an unconditional runtime dependency. This is metadata-only
+# preparation, not a firmware compilation.
+make -C "$source_dir" prepare-tmpinfo
+perl "$repo_root/scripts/verify-package-closure-v0.1.pl" \
+	"$source_dir" "$source_dir/.config" "$required_packages_file"
 
 make -C "$source_dir" -j"$jobs" download
 # target/linux/compile is invoked explicitly for early board/kernel diagnostics;

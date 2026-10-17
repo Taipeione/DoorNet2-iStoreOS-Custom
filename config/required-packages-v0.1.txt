@@ -1,0 +1,33 @@
+# Required DoorNet2-V0.1 rootfs packages after iStoreOS' final defconfig.
+# The cloud-only closure checker recursively verifies unconditional runtime
+# dependencies declared by the exact pinned source and feeds.
+adguardhome
+chinadns-ng
+coreutils
+coreutils-base64
+coreutils-nohup
+coreutils-timeout
+curl
+dns2socks
+dnsmasq-full
+geoview
+ip-full
+libbpf
+libelf
+libopenssl
+libuci-lua
+libyaml
+lua
+luci-app-passwall
+luci-app-passwall2
+luci-app-smartdns
+luci-compat
+luci-lib-jsonc
+lyaml
+microsocks
+resolveip
+smartdns
+tcping
+unzip
+v2ray-geoip
+v2ray-geosite
