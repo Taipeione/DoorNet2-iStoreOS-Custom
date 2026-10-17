@@ -58,6 +58,16 @@ replace_once(
     "DISTRIB_DESCRIPTION='DoorNet2-V0.1'\n",
 )
 
+# Keep the sysupgrade fwtool metadata's version identifier in sync with the
+# formal firmware name. VERSION_NUMBER remains V0.1 for upstream release
+# fields, while VERSION_CODE is the exact DoorNet2-V0.1 project identifier.
+image_commands = source / "include/image-commands.mk"
+replace_once(
+    image_commands,
+    '"version": "$(call json_quote,$(VERSION_NUMBER))",',
+    '"version": "$(call json_quote,$(VERSION_CODE))",',
+)
+
 # This package is a default-y choice for RK3528/RK3576 boards, unrelated to
 # DoorNet2's RK3399 boot chain. Prevent its generic default from pulling either
 # firmware into this target's package set; device-specific selection can still

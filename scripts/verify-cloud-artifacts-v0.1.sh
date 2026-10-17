@@ -7,10 +7,12 @@ repo_root=$(cd -- "$(dirname -- "$0")/.." && pwd)
 profiles="$artifact_dir/profiles.json"
 checksums="$artifact_dir/sha256sums"
 manifest=$(find "$artifact_dir" -maxdepth 1 -type f -name '*embedfire_doornet2.manifest' -print -quit)
+fwtool="$repo_root/work/istoreos/staging_dir/host/bin/fwtool"
 
 test -s "$profiles"
 test -s "$checksums"
 test -n "$manifest"
+test -x "$fwtool"
 python3 - "$artifact_dir" "$profiles" "$checksums" <<'PY'
 import hashlib, json, os, sys
 artifact_dir, profiles_path, checksums_path = sys.argv[1:]
@@ -43,6 +45,10 @@ for image in images:
         assert image.get("sha256") and image.get("name", "").endswith(".img.gz")
         image["name"] = renames.get(image["name"], image["name"])
         assert image["name"].startswith(prefix), image["name"]
+        path = os.path.join(artifact_dir, image["name"])
+        with open(path, "rb") as firmware:
+            actual_sha256 = hashlib.file_digest(firmware, "sha256").hexdigest()
+        assert image["sha256"] == actual_sha256, f"profiles.json checksum mismatch: {image['name']}"
 with open(profiles_path, "w", encoding="utf-8") as f:
     json.dump(p, f, indent=2, ensure_ascii=False)
     f.write("\n")
@@ -66,8 +72,34 @@ manifest=$(find "$artifact_dir" -maxdepth 1 -type f -name '*embedfire_doornet2.m
 for fs in ext4 squashfs; do
 	image=$(find "$artifact_dir" -maxdepth 1 -type f -name "*embedfire_doornet2-${fs}-sysupgrade.img.gz" -print -quit)
 	test -n "$image"
-	gzip -t "$image"
-	file "$image"
+	# fwtool appends the sysupgrade JSON trailer after the gzip stream. GNU
+	# gzip validates the stream CRC but exits 2 with a trailing-garbage warning.
+	gzip_status=0
+	gzip_report=$(gzip -t "$image" 2>&1) || gzip_status=$?
+	if [ "$gzip_status" -ne 2 ] || [[ "$gzip_report" != *'trailing garbage ignored'* ]]; then
+		printf 'FAIL: unexpected gzip validation result for %s: %s\n' "$image" "$gzip_report" >&2
+		exit 1
+	fi
+	metadata=$(mktemp)
+	"$fwtool" -i "$metadata" "$image"
+	python3 - "$metadata" "$fs" "$image" <<'PY'
+import gzip, json, struct, subprocess, sys
+metadata_path, filesystem, image_path = sys.argv[1:]
+with open(metadata_path, encoding="utf-8") as f:
+    metadata = json.load(f)
+assert metadata.get("version", {}).get("version") == "DoorNet2-V0.1", metadata
+assert "embedfire,doornet2" in metadata.get("supported_devices", []), metadata
+with gzip.open(image_path, "rb") as f:
+    header = f.read(65536)
+assert len(header) == 65536 and header[510:512] == b"\x55\xaa", "Missing MBR disk image"
+first_partition = struct.unpack_from("<I", header, 446 + 8)[0]
+assert first_partition == 32768, f"Unexpected boot partition start: {first_partition}"
+identified = subprocess.check_output(["file", "-"], input=header, text=False).decode().strip()
+assert "DOS/MBR boot sector" in identified, identified
+print(f"PASS: {filesystem} sysupgrade gzip CRC, fwtool metadata, MBR, 16 MiB boot partition offset")
+print(identified)
+PY
+	rm -f "$metadata"
 done
 grep -q 'CONFIG_VERSION_DIST="DoorNet2"' "$repo_root/configs/doorNet2-v0.1.config"
 grep -q 'CONFIG_VERSION_NUMBER="V0.1"' "$repo_root/configs/doorNet2-v0.1.config"

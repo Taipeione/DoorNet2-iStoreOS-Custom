@@ -45,6 +45,7 @@ check rg -q 'CONFIG_VERSION_NUMBER="V0.1"' "$repo_root/configs/doorNet2-v0.1.con
 check rg -q 'CONFIG_VERSION_CODE="DoorNet2-V0.1"' "$repo_root/configs/doorNet2-v0.1.config"
 check rg -q 'CONFIG_VERSION_PRODUCT="DoorNet2-V0.1"' "$repo_root/configs/doorNet2-v0.1.config"
 check rg -q "DISTRIB_DESCRIPTION='DoorNet2-V0.1'" "$source_dir/package/base-files/files/etc/openwrt_release"
+check rg -F -q '"version": "$(call json_quote,$(VERSION_CODE))",' "$source_dir/include/image-commands.mk"
 check rg -q 'DEFAULT:=n' "$source_dir/package/boot/uboot-rk35xx/Makefile"
 check rg -q 'CONFIG_PACKAGE_luci-app-passwall=y' "$repo_root/configs/doorNet2-v0.1.config"
 check rg -q 'CONFIG_PACKAGE_luci-app-passwall2=y' "$repo_root/configs/doorNet2-v0.1.config"
