@@ -56,6 +56,9 @@ elif ! grep -q '^PKG_VERSION:=0.1.10$' "$source_dir/feeds/passwall_packages/geov
 	echo 'Unexpected geoview feed version or hash; refusing an unpinned build.' >&2
 	exit 1
 fi
+# Upstream AdGuard Home's interface-up trigger restarts the daemon without an
+# enable guard. Ship it disabled and make explicit UCI enablement persistent.
+patch -d "$source_dir" -p1 < "$repo_root/board/doorNet2/feeds/0002-adguardhome-disabled-by-default.patch"
 "$source_dir/scripts/feeds" install luci-theme-argon luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng
 
 sed -i -e '/^CONFIG_GDB=/d' -e '/^# CONFIG_GDB is not set/d' "$source_dir/.config"

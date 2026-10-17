@@ -24,6 +24,8 @@ release_description=$(sed -n "s/^DISTRIB_DESCRIPTION=//p" "$rootfs/etc/openwrt_r
 grep -Fq 'json_add_string ipaddr 192.168.100.1' "$rootfs/etc/board.d/99-lan-ip"
 grep -Fq 'json_add_string netmask 255.255.255.0' "$rootfs/etc/board.d/99-lan-ip"
 grep -Fq 'pi_ip="192.168.100.1"' "$rootfs/lib/preinit/00_preinit.conf"
+grep -Fq "option enabled '0'" "$rootfs/etc/config/adguardhome"
+grep -Fq 'config_get_bool enabled config enabled 0' "$rootfs/etc/init.d/adguardhome"
 
 test_root=$(mktemp -d "${TMPDIR:-/tmp}/doornet2-policy-test.XXXXXX")
 trap 'rm -rf "$test_root"' EXIT HUP INT TERM
