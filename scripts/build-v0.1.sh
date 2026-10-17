@@ -86,11 +86,11 @@ done
 # Re-apply the reviewed DoorNet2 package set after that normalization so the
 # final .config is the actual image input. The gate below still refuses the
 # build if any requested package cannot be represented by the buildroot.
-for package in dnsmasq-full luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng; do
+for package in libopenssl dnsmasq-full luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng; do
 	sed -i "/^CONFIG_PACKAGE_${package}=/d" "$source_dir/.config"
 	printf 'CONFIG_PACKAGE_%s=y\n' "$package" >> "$source_dir/.config"
 done
-for package in dnsmasq-full luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng; do
+for package in libopenssl dnsmasq-full luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng; do
 	if ! grep -q "^CONFIG_PACKAGE_${package}=y$" "$source_dir/.config"; then
 		printf 'defconfig dropped required DoorNet2 package %s; refusing an incomplete plugin build.\n' "$package" >&2
 		exit 1

@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   firmware:
-    name: DoorNet2-V0.1 firmware (GitHub-hosted)
+    name: DoorNet2-V0.1
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     env:
