@@ -63,7 +63,7 @@ printf '%s\n' '# CONFIG_GDB is not set' >> "$source_dir/.config"
 make -C "$source_dir" defconfig
 sed -i '/^CONFIG_PACKAGE_dnsmasq=/d' "$source_dir/.config"
 printf '%s\n' '# CONFIG_PACKAGE_dnsmasq is not set' >> "$source_dir/.config"
-for package in u-boot-easepi-rk3528 u-boot-easepi-rk3568 u-boot-easepi-rk3568-rk809 u-boot-easepi-rk3576 u-boot-easepi-rk3588; do
+for package in u-boot-easepi-rk3528 u-boot-easepi-rk3576 u-boot-easepi-rk3568 u-boot-easepi-rk3568-rk809 u-boot-easepi-rk3588; do
 	sed -i "/^CONFIG_PACKAGE_${package}=/d" "$source_dir/.config"
 	printf '# CONFIG_PACKAGE_%s is not set\n' "$package" >> "$source_dir/.config"
 done

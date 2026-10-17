@@ -7,14 +7,14 @@ Audit started 2026-10-16. This is an evidence record, not a hardware acceptance 
 | Area | Evidence | Result |
 |---|---|---|
 | Board | EmbedFire documents RK3399, two Gigabit ports, 8 GB eMMC, MicroSD, two USB 3.0 ports, optional USB Wi-Fi, Flash/Reset keys and LEDs. | Vendor identity confirmed. |
-| Linux DTS | DoorNet2 RK3399 DTS and SoC includes compile in the pinned iStoreOS Linux 6.6.144 tree. | Compile PASS; runtime device-tree behavior remains untested on hardware. |
-| U-Boot | DoorNet2 U-Boot package compiled against the pinned iStoreOS U-Boot 2024.10 source, including SPL/TPL, DTB, and binman output. The build uses the native `arch/arm/dts` path. | Compile PASS; boot behavior and SDRAM variant selection remain untested on hardware. |
-| Firmware | Full ext4 and squashfs sysupgrade images generated for profile `embedfire_doornet2`; `profiles.json`, manifest, version code, and SHA256 checks pass. | Build PASS; not hardware/partition acceptance. |
+| Linux DTS | DoorNet2 RK3399 DTS and SoC includes are integrated into the pinned iStoreOS Linux 6.6.144 source. | NOT TESTED in the current GitHub Actions builds; compile/runtime evidence remains open. |
+| U-Boot | DoorNet2 U-Boot package integration is present for the pinned iStoreOS U-Boot 2024.10 source. | NOT TESTED in the current GitHub Actions builds; boot behavior and SDRAM variant selection remain untested. |
+| Firmware | Full ext4 and squashfs sysupgrade image generation is configured for profile `embedfire_doornet2`. | NOT TESTED in an accepted cloud run; no cloud artifact has passed verification. |
 | Boot media | U-Boot maps `mmc0` to `sdmmc`, `mmc1` to `sdhci`, and declares SPL boot order `same-as-spl`, SD, eMMC. The community README documents MicroSD and eMMC workflows. | Boot intent known; production image offsets/layout unverified. |
 | Storage | Sources enable 8-bit non-removable eMMC and 4-bit removable MicroSD with card-detect/power GPIOs. | Source-level evidence only. |
 | Ethernet | Sources describe the SoC GMAC path and a PCIe Realtek path; one source uses `realtek,r8168`, another models an RTL8211F GMAC PHY. | Mapping/PHY/port labels require confirmation. |
 | LEDs/key | Sources map system, LAN, WAN LEDs and reset GPIOs. | Source-level evidence only. |
-| iStoreOS | Official repository has an active `istoreos-24.10` line. The V0.1 build is pinned to commit `a405f0378aef729f0f250c94b18a34a09b7d8890` (24.10.8 release line); code search found no DoorNet2 support in the official tree. | Base pin recorded; DoorNet2 integration is in this repository and full software image construction passes. Hardware validation remains open. |
+| iStoreOS | Official repository has an active `istoreos-24.10` line. `DoorNet2-V0.1` is pinned to commit `a405f0378aef729f0f250c94b18a34a09b7d8890` (24.10.8 release line); code search found no DoorNet2 support in the official tree. | Base pin recorded; DoorNet2 integration is in this repository. Full cloud image construction has not passed. |
 
 ## Open items
 
@@ -26,7 +26,7 @@ Audit started 2026-10-16. This is an evidence record, not a hardware acceptance 
 
 ## Decision
 
-Do not claim V0.1 hardware readiness or create a formal release yet. The pinned source, Linux target, DoorNet2 U-Boot package, full image construction, plugin package integration, image profile, and checksums are established. Partition and bootloader behavior, physical-device startup, service lifecycles, and OTA retention remain gated on device evidence. Do not write the image to eMMC or alter partitions without separate user confirmation.
+Do not claim `DoorNet2-V0.1` readiness or create a formal release yet. The pinned source, Linux target integration, DoorNet2 U-Boot package integration, plugin package selections, and image profile are recorded, but cloud builds have not yet completed full image construction and artifact verification. Partition and bootloader behavior, physical-device startup, service lifecycles, and OTA retention remain gated on device evidence. Do not write the image to eMMC or alter partitions without separate user confirmation.
 
 ## References
 

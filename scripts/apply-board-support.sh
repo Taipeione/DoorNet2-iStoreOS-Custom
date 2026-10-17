@@ -51,6 +51,24 @@ TARGET_DEVICES += embedfire_doornet2
 """
 replace_once(image, "define Device/friendlyarm_nanopi-r2c\n", device + "define Device/friendlyarm_nanopi-r2c\n")
 
+release_template = source / "package/base-files/files/etc/openwrt_release"
+replace_once(
+    release_template,
+    "DISTRIB_DESCRIPTION='%D %V %C'\n",
+    "DISTRIB_DESCRIPTION='DoorNet2-V0.1'\n",
+)
+
+# This package is a default-y choice for RK3528/RK3576 boards, unrelated to
+# DoorNet2's RK3399 boot chain. Prevent its generic default from pulling either
+# firmware into this target's package set; device-specific selection can still
+# explicitly opt in when required by a different board.
+rk35xx_uboot = source / "package/boot/uboot-rk35xx/Makefile"
+replace_once(
+    rk35xx_uboot,
+    "define U-Boot/Default\n  BUILD_TARGET:=rockchip\n  UENV:=default\n  HIDDEN:=1\n  BUILD_SUBTARGET:=armv8\n  DEFAULT:=y\n",
+    "define U-Boot/Default\n  BUILD_TARGET:=rockchip\n  UENV:=default\n  HIDDEN:=1\n  BUILD_SUBTARGET:=armv8\n  DEFAULT:=n\n",
+)
+
 for relative in (
     "target/linux/rockchip/armv8/base-files/etc/board.d/01_leds",
     "target/linux/rockchip/armv8/base-files/etc/board.d/02_network",

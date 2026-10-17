@@ -1,4 +1,4 @@
-# DoorNet2 V0.1 independent WeChatDirect domain set.
+# DoorNet2-V0.1 independent WeChatDirect domain set.
 # Consumers must import this set into their own direct-routing table.
 domain:wechat.com
 domain:weixin.qq.com

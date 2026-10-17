@@ -1,4 +1,5 @@
-name: DoorNet2 V0.1 Cloud Firmware Build
+name: DoorNet2-V0.1
+run-name: "DoorNet2-V0.1 #${{ github.run_number }}"
 
 on:
   push:
@@ -14,7 +15,7 @@ concurrency:
 
 jobs:
   firmware:
-    name: Full RK3399 firmware (GitHub-hosted)
+    name: DoorNet2-V0.1 firmware (GitHub-hosted)
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     env:
@@ -100,9 +101,16 @@ jobs:
           set -euo pipefail
           scripts/verify-cloud-artifacts-v0.1.sh "$BUILD_OUTPUT_DIR" "$GITHUB_SHA" 2>&1 | tee -a work/cloud-build.log
           cp work/cloud-build-identity.txt "$BUILD_OUTPUT_DIR/"
-          sha256sum "$BUILD_OUTPUT_DIR"/*sysupgrade.img.gz | tee "$BUILD_OUTPUT_DIR/image-sha256sums.txt"
+          (
+            cd "$BUILD_OUTPUT_DIR"
+            sha256sum \
+              DoorNet2-V0.1-*-sysupgrade.img.gz \
+              DoorNet2-V0.1-*.manifest \
+              profiles.json \
+              DoorNet2-V0.1-BuildInfo.txt
+          ) | tee "$BUILD_OUTPUT_DIR/DoorNet2-V0.1-SHA256SUMS"
           {
-            echo "### DoorNet2 V0.1 cloud firmware build: PASS"
+            echo "### DoorNet2-V0.1 cloud firmware build: PASS"
             echo
             echo "- Repository commit: `$GITHUB_SHA`"
             echo "- Runner: GitHub-hosted `ubuntu-24.04`"
@@ -112,7 +120,7 @@ jobs:
             echo "- Images: ext4 and squashfs sysupgrade; see artifact checksums below."
             echo
             echo '```text'
-            cat "$BUILD_OUTPUT_DIR/image-sha256sums.txt"
+            cat "$BUILD_OUTPUT_DIR/DoorNet2-V0.1-SHA256SUMS"
             echo '```'
             echo
             echo 'This is a successful cloud compile and artifact check only. Device boot, service lifecycle, DNS runtime, OTA restore, and hardware acceptance remain NOT TESTED.'
@@ -122,7 +130,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: doornet2-v0.1-${{ github.sha }}-run-${{ github.run_id }}
+          name: DoorNet2-V0.1-${{ github.sha }}-run-${{ github.run_number }}
           path: |
             work/cloud-build.log
             work/cloud-build-identity.txt
@@ -136,7 +144,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo '### DoorNet2 V0.1 cloud firmware build: NOT PASSED'
+            echo '### DoorNet2-V0.1 cloud firmware build: NOT PASSED'
             echo
             echo "- Repository commit: `$GITHUB_SHA`"
             echo "- Full build step: `${{ steps.full_build.outcome }}`"

@@ -7,7 +7,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/doornet2-base
   SECTION:=base
   CATEGORY:=Base system
-  TITLE:=DoorNet2 V0.1 policy and upgrade preservation
+  TITLE:=DoorNet2-V0.1 policy and upgrade preservation
   DEPENDS:=+uci
 endef
 

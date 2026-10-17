@@ -16,6 +16,12 @@ command -v chroot >/dev/null 2>&1 || {
 	exit 2
 }
 
+release_description=$(sed -n "s/^DISTRIB_DESCRIPTION=//p" "$rootfs/etc/openwrt_release")
+[ "$release_description" = "'DoorNet2-V0.1'" ] || {
+	echo "Unexpected firmware display name: $release_description" >&2
+	exit 1
+}
+
 test_root=$(mktemp -d "${TMPDIR:-/tmp}/doornet2-policy-test.XXXXXX")
 trap 'rm -rf "$test_root"' EXIT HUP INT TERM
 cp -a "$rootfs/." "$test_root/"
@@ -60,6 +66,7 @@ for config in passwall passwall2; do
 	[ "$(uci get "$config.@global[0].enabled")" = "0" ]
 done
 [ "$(uci get doornet2.global.lan_ipv4)" = "10.10.10.1" ]
+[ "$(uci get doornet2.global.version)" = "DoorNet2-V0.1" ]
 
 uci set passwall.@global[0].enabled=1
 uci set passwall2.@global[0].enabled=1

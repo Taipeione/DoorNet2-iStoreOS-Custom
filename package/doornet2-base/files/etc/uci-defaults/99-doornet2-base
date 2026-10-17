@@ -4,7 +4,7 @@
 # address, so a sysupgrade cannot turn a user's LAN back into the V0.1 default.
 uci -q get doornet2.global >/dev/null 2>&1 || {
 	uci -q set doornet2.global=policy
-	uci -q set doornet2.global.version='V0.1'
+	uci -q set doornet2.global.version='DoorNet2-V0.1'
 }
 
 uci -q get doornet2.global.lan_ipv4 >/dev/null 2>&1 || \

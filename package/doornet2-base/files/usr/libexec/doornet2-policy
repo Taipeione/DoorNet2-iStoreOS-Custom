@@ -64,7 +64,7 @@ case "$action" in
 		uci -q get doornet2.global.wechat_direct >/dev/null 2>&1 || \
 			uci -q set doornet2.global.wechat_direct='1'
 		uci -q get doornet2.global.version >/dev/null 2>&1 || \
-			uci -q set doornet2.global.version='V0.1'
+			uci -q set doornet2.global.version='DoorNet2-V0.1'
 		uci -q commit doornet2
 		[ "$(uci -q get doornet2.global.wechat_direct || true)" = "1" ] && {
 			ensure_wechat_direct passwall
