@@ -168,9 +168,9 @@ jobs:
           {
             echo '### DoorNet2-V0.1 cloud firmware build: NOT PASSED'
             echo
-            echo "- Repository commit: `$GITHUB_SHA`"
-            echo "- Full build step: `${{ steps.full_build.outcome }}`"
-            echo "- Artifact verification step: `${{ steps.artifact_check.outcome }}`"
+            echo "- Repository commit: $GITHUB_SHA"
+            echo "- Full build step: ${{ steps.full_build.outcome }}"
+            echo "- Artifact verification step: ${{ steps.artifact_check.outcome }}"
             echo '- Build log and any partial artifacts are attached to this run as an Actions Artifact.'
             echo '- No local build is used as a substitute for this result.'
           } >> "$GITHUB_STEP_SUMMARY"

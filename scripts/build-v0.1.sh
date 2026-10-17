@@ -84,13 +84,25 @@ done
 # iStoreOS' second defconfig normalizes the base target configuration but can
 # clear feed-provided package selections after their Makefiles are installed.
 # Re-apply the reviewed DoorNet2 package set after that normalization so the
-# final .config is the actual image input. The gate below still refuses the
-# build if any requested package cannot be represented by the buildroot.
-for package in libopenssl dnsmasq-full luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng; do
+# final .config is the actual image input. Re-apply the direct runtime
+# dependencies declared by the pinned PassWall feeds as well: the feed
+# packages are selected after the final defconfig, so relying on Kconfig to
+# pull this closure in would produce ipks with unresolved dependencies.
+for package in \
+	libopenssl dnsmasq-full luci-app-passwall luci-app-passwall2 smartdns \
+	luci-app-smartdns adguardhome chinadns-ng \
+	coreutils coreutils-base64 coreutils-nohup coreutils-timeout curl \
+	dns2socks geoview ip-full libuci-lua lua luci-compat luci-lib-jsonc \
+	lyaml microsocks resolveip tcping unzip v2ray-geoip v2ray-geosite; do
 	sed -i "/^CONFIG_PACKAGE_${package}=/d" "$source_dir/.config"
 	printf 'CONFIG_PACKAGE_%s=y\n' "$package" >> "$source_dir/.config"
 done
-for package in libopenssl dnsmasq-full luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng; do
+for package in \
+	libopenssl dnsmasq-full luci-app-passwall luci-app-passwall2 smartdns \
+	luci-app-smartdns adguardhome chinadns-ng \
+	coreutils coreutils-base64 coreutils-nohup coreutils-timeout curl \
+	dns2socks geoview ip-full libuci-lua lua luci-compat luci-lib-jsonc \
+	lyaml microsocks resolveip tcping unzip v2ray-geoip v2ray-geosite; do
 	if ! grep -q "^CONFIG_PACKAGE_${package}=y$" "$source_dir/.config"; then
 		printf 'defconfig dropped required DoorNet2 package %s; refusing an incomplete plugin build.\n' "$package" >&2
 		exit 1
