@@ -88,6 +88,11 @@ make -C "$source_dir" -j"$jobs" download
 make -C "$source_dir" -j"$jobs" tools/install
 make -C "$source_dir" -j"$jobs" toolchain/install
 make -C "$source_dir" -j"$jobs" V="${BUILD_VERBOSE:-}" target/linux/compile
+# U-Boot's binman step consumes this exact RK3399 BL31 filename. Build the
+# upstream Trusted Firmware-A variant explicitly before the DoorNet2-specific
+# U-Boot variant; the latter's BUILD_VARIANT name is not an ATF variant.
+make -C "$source_dir" -j"$jobs" V="${BUILD_VERBOSE:-}" \
+	package/boot/arm-trusted-firmware-rockchip/compile BUILD_VARIANT=rk3399
 make -C "$source_dir" -j"$jobs" V="${BUILD_VERBOSE:-}" package/boot/uboot-rockchip/compile BUILD_VARIANT=doornet2-rk3399
 make -C "$source_dir" -j"$jobs" V="${BUILD_VERBOSE:-}"
 

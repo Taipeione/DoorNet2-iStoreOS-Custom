@@ -12,7 +12,7 @@ This matrix distinguishes source checks from cloud compilation and hardware acce
 | Build | Final `make defconfig` is in sync after DoorNet2 package exclusions | PASS (run 38995835630 reached host tools and Linux stages with resolved package assertions) |
 | Build | RK3399 Linux target compile in GitHub Actions | FAIL (run 38995835630: missing ARM64 cross compiler; no kernel/image produced) |
 | Build | DoorNet2 U-Boot target compile, including SPL/TPL and DTB, in GitHub Actions | NOT TESTED |
-| Boot compatibility | In-flight cloud run #8 U-Boot memory selection versus owner's 1 GB DDR3L hardware | FAIL (the run's source selects LPDDR4; it cannot qualify for release even if compilation succeeds) |
+| Boot compatibility | In-flight cloud run #8 U-Boot configuration versus owner's 1 GB DDR3L hardware | FAIL (the run's source contains an LPDDR4-specific request and multiple SDRAM parameter sets; compatibility is not established, so it cannot qualify for release) |
 | Boot compatibility | Corrected DDR3 SDRAM selection and FIT at sector `0x4000` in a new cloud image | NOT TESTED |
 | Build | Complete cloud DoorNet2 image and metadata (ext4 and squashfs sysupgrade artifacts) | NOT TESTED |
 | Build | Cloud image SHA256 matches generated `sha256sums` and `profiles.json` metadata | NOT TESTED |

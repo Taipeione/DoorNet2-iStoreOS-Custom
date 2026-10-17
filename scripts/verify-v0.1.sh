@@ -59,6 +59,7 @@ check rg -q '9221df928df68030893125a60bdf6d8a1fef2b199fa58ed80772cb3c17225fc5' "
 check_not rg -q '192\.168\.50\.1' "$repo_root/configs/doorNet2-v0.1.config"
 check rg -q '192\.168\.50\.1' "$repo_root/AGENTS.md"
 check rg -q 'CONFIG_PACKAGE_doornet2-base=y' "$repo_root/configs/doorNet2-v0.1.config"
+check rg -q 'CONFIG_PACKAGE_trusted-firmware-a-rk3399=y' "$repo_root/configs/doorNet2-v0.1.config"
 check rg -q 'CONFIG_PACKAGE_u-boot-doornet2-rk3399=y' "$repo_root/configs/doorNet2-v0.1.config"
 for unrelated in u-boot-easepi-rk3528 u-boot-easepi-rk3576 u-boot-easepi-rk3568 u-boot-easepi-rk3568-rk809 u-boot-easepi-rk3588; do
 	check_not rg -q "CONFIG_PACKAGE_${unrelated}=y" "$repo_root/configs/doorNet2-v0.1.config"
