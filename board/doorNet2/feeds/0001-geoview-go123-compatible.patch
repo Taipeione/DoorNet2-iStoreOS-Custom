@@ -1,8 +1,0 @@
---- a/feeds/passwall_packages/geoview/Makefile
-+++ b/feeds/passwall_packages/geoview/Makefile
-@@ -4 +4 @@
--PKG_VERSION:=0.2.6
-+PKG_VERSION:=0.1.10
-@@ -9 +9 @@
--PKG_HASH:=1b46d4255ab22ec433a14f804e9487885cc2693323579c1385d51919838db132
-+PKG_HASH:=9221df928df68030893125a60bdf6d8a1fef2b199fa58ed80772cb3c17225fc5

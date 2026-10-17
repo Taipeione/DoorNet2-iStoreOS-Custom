@@ -1,0 +1,34 @@
+--- a/feeds/packages/net/adguardhome/files/adguardhome.conf
++++ b/feeds/packages/net/adguardhome/files/adguardhome.conf
+@@ -1,5 +1,6 @@
+ 
+ config adguardhome 'config'
++	option enabled '0'
+ 	# All paths must be readable by the configured user
+ 	option config_file '/etc/adguardhome/adguardhome.yaml'
+ 	# Where to store persistent data by AdGuard Home
+--- a/feeds/packages/net/adguardhome/files/adguardhome.init
++++ b/feeds/packages/net/adguardhome/files/adguardhome.init
+@@ -28,12 +28,14 @@
+ 	local config_name='config'
+ 	local config_file config group user verbose work_dir workdir
+ 	local gc maxprocs memlimit
++	local enabled
+ 
+ 	uci_validate_section 'adguardhome' 'adguardhome' "$config_name" \
+ 		'gc:uinteger:0' \
+ 		'group:string:adguardhome' \
+ 		'config:string' \
+ 		'config_file:string:/etc/adguardhome/adguardhome.yaml' \
++		'enabled:bool:0' \
+ 		'jail_mount:list(string)' \
+ 		'jail_mount_rw:list(string)' \
+ 		'maxprocs:uinteger:0' \
+@@ -46,6 +48,7 @@
+ 	# Compatibility with older configs
+ 	[ -n "$config" ] && config_file="$config"
+ 	[ -n "$workdir" ] && work_dir="$workdir"
++	[ "$enabled" = 1 ] || return 0
+ 
+ 	local config_dir
+ 	config_dir=$(dirname "$config_file")

@@ -1,27 +1,32 @@
-# DoorNet2 iStoreOS Custom Firmware
+# DoorNet2 Custom Firmware
 
-Public firmware project for EmbedFire DoorNet2, an RK3399-based device.
+`DoorNet2-V0.1` is a public, standard-OpenWrt firmware project for the
+EmbedFire DoorNet2 (RK3399, owner-confirmed 1 GB DDR3L model).
 
-## DoorNet2-V0.1 target
+## Build baseline
 
-- Base: iStoreOS 24.10.8
-- Formal firmware identity: `DoorNet2-V0.1` (independent of the base distribution release)
+- Base system: signed upstream [OpenWrt v25.12.5](https://github.com/openwrt/openwrt/releases/tag/v25.12.5), pinned to `f0a60eee2fe051741c643ea6118718aae1ef17fb`
+- Board support: DoorNet2 DTS, U-Boot integration and Rockchip image profile in this repository
+- Application feed: independent [iStore](https://github.com/linkease/istore) `luci-app-store`, not iStoreOS
 - Clean-install LAN: `192.168.100.1/24`
-- Hardware: DoorNet2 RK3399; board-specific DTS and U-Boot only
-- Optional services: PassWall, PassWall2, SmartDNS, AdGuard Home, ChinaDNS-NG, and WeChatDirect are included in the pinned build inputs; runtime acceptance remains pending
-- OTA: retain user configuration and service enablement state; merge new settings idempotently
+- Images: ext4 and squashfs sysupgrade disk images, with Rockchip loader/FIT structural checks
 
-## Status
+The GitHub workflow is named `DoorNet2-V0.1`, runs on GitHub-hosted runners,
+and records the DoorNet2 and OpenWrt commits. No local compilation is accepted
+as a release input.
 
-All formal firmware compilation runs on GitHub-hosted Actions; no local Docker or local-machine build is accepted. Previous local Docker images are historical development artifacts only. Cloud attempts have not yet completed artifact verification; consult [`docs/cloud-build-history.md`](docs/cloud-build-history.md) and [`docs/test-matrix.md`](docs/test-matrix.md) for the actual run results. Device boot, plugin process lifecycle, DNS runtime, and OTA restore tests remain NOT TESTED. The build procedure is in [`docs/build.md`](docs/build.md). No formal release exists and no real DoorNet2 hardware test has been performed.
+## Current status
 
-The audit found community DoorNet2 DTS/U-Boot material, but not enough verified information to claim hardware acceptance. Board variants and the exact production partition/boot image layout still require reconciliation. PassWall/PassWall2 and DNS runtime lifecycle tests remain open; the policy package deliberately does not start or stop optional services.
+The repository has been migrated away from the iStoreOS base-system route.
+The next result must be a new standard-OpenWrt cloud build; prior iStoreOS
+cloud runs and local artifacts are historical audit evidence only. The
+reference firmware was inspected read-only and is not copied or released.
 
-Do not flash eMMC or alter a real device without explicit confirmation. Hardware claims must remain `NOT TESTED` until backed by reproducible real-device evidence.
+PassWall, PassWall2, SmartDNS, AdGuard Home, ChinaDNS-NG, iStore, Argon and
+WeChatDirect are configured as build inputs. Their real-device lifecycle,
+DNS behavior, routing, OTA recovery, boot, Ethernet mapping, and DDR3L
+training are **NOT TESTED**. A successful compile alone never authorizes
+flashing or a release.
 
-## Sources
-
-- [EmbedFire DoorNet2 documentation](https://doc.embedfire.com/openwrt/user_manal/zh/latest/User_Manual/board_introduce/dn2_introduce.html)
-- [EmbedFire product resource index](https://doc.embedfire.com/products_test/link/zh/latest/linux/ebf_doornet.html)
-- [Community DoorNet2 build repository](https://github.com/bluedragon1988/DoorNet2)
-- [Community Rockchip/OpenWrt source with DoorNet2 DTS](https://github.com/DHDAXCW/lede-rockchip)
+See [the build guide](docs/build.md), [hardware audit](docs/hardware-audit.md),
+[reference-image audit](docs/reference-firmware-audit.md), and [test matrix](docs/test-matrix.md).

@@ -1,49 +1,28 @@
 # DoorNet2-V0.1 test matrix
 
-This matrix distinguishes source checks from cloud compilation and hardware acceptance. The ext4/squashfs images previously found in ignored `work/build-output` were built locally with Docker. They are historical artifacts, not GitHub Actions results, and do not satisfy the permanent cloud-build requirement. Until a matching Actions run and artifact are verified, cloud build rows remain NOT TESTED. No real-device tests have been run.
+The standard-OpenWrt migration supersedes iStoreOS build results. Historical
+iStoreOS failures and artifacts remain in the audit record but are not release
+evidence for this line. No real device has been written or flashed.
 
 | Area | Required check | Status |
 |---|---|---|
-| Build | Static V0.1 checks and shell syntax | PASS |
-| Build | GitHub-hosted runner checked out and recorded exact DoorNet2 repository commit | PASS (run 38993536280) |
-| Build | Cloud static Precheck | PASS (run 38995835630; earlier failures are recorded in build history) |
-| Build | Full cloud compile after naming corrections | FAIL (run 38995835630 stopped during Linux target configuration because the ARM64 cross compiler was not installed; `toolchain/install` added for retest) |
-| Build | Pinned feeds update and each checked-out HEAD matches the configured 40-character revision | PASS (run 38994050512) |
-| Build | Final `make defconfig` is in sync after DoorNet2 package exclusions | PASS (run 38995835630 reached host tools and Linux stages with resolved package assertions) |
-| Build | RK3399 Linux target compile in GitHub Actions | FAIL (run 38995835630: missing ARM64 cross compiler; no kernel/image produced) |
-| Build | DoorNet2 U-Boot target compile, including SPL/TPL and DTB, in GitHub Actions | NOT TESTED |
-| Boot compatibility | In-flight cloud run #8 U-Boot configuration versus owner's 1 GB DDR3L hardware | FAIL (the run's source contains an LPDDR4-specific request and multiple SDRAM parameter sets; compatibility is not established, so it cannot qualify for release) |
-| Boot compatibility | Corrected DDR3 SDRAM selection and FIT at sector `0x4000` in a new cloud image | NOT TESTED |
-| Build | Complete cloud DoorNet2 image and metadata (ext4 and squashfs sysupgrade artifacts) | NOT TESTED |
-| Build | Cloud image SHA256 matches generated `sha256sums` and `profiles.json` metadata | NOT TESTED |
-| Build | Cloud image target/profile/version: `embedfire,doornet2`, RK3399, `DoorNet2-V0.1` | NOT TESTED |
-| Version | Firmware `/etc/openwrt_release` display, OTA UCI version metadata, artifact/BuildInfo/checksum prefixes all exactly `DoorNet2-V0.1` | NOT TESTED (naming changes await successful cloud artifact verification) |
-| Build | Cloud full-image package installation including dnsmasq-full, Argon, and selected optional services | NOT TESTED |
-| Build | Cloud build logs reviewed; failures and warnings classified and retained | PASS (runs 38993536280 through 38995835630) |
-| Reference audit | User-supplied reference gzip/member, fwtool tail, MBR, U-Boot/FIT, Linux, rootfs, packages, network generation, and upgrade script inspected | PASS (read-only forensic audit; no hardware acceptance) |
-| Reference compatibility | Reference LAN and partition data are not copied into DoorNet2-V0.1 without validation | PASS (192.168.11.1/24 and the different 32 MiB/96 MiB map were correctly rejected) |
-| Policy | Cloud built-rootfs UCI test: WeChatDirect merge, mapping preservation, disabled defaults, and repeat idempotence | NOT TESTED |
-| Policy | Cloud reconciler test preserves user LAN value and PassWall/PassWall2 toggles | NOT TESTED |
-| Historical | Previous local Docker image build and policy test (not a cloud result; excluded from acceptance) | PASS (LOCAL ONLY) |
-| Build | Resolved config includes PassWall, PassWall2, SmartDNS, LuCI SmartDNS, AdGuard Home, ChinaDNS-NG | PASS |
-| Defaults | PassWall and PassWall2 shipped default configs set `enabled=0` | PASS |
-| Defaults | SmartDNS shipped UCI default sets `enabled=0` | PASS |
-| Defaults | AdGuard Home package config and init script are present; runtime activation behavior | NOT TESTED |
-| Defaults | Built sysupgrade keep files cover network and optional-service UCI/config/data paths | PASS |
-| Defaults | Built clean-install configuration sets LAN to `192.168.100.1/24`; no `192.168.50.1` target default | PASS |
-| Policy | WeChatDirect additive/idempotent merge and CN-shunt association using the built UCI binary | PASS |
-| Boot | Cold boot from MicroSD | NOT TESTED |
-| Boot | eMMC boot | NOT TESTED |
-| Network | Device applies clean-install LAN and is reachable at `192.168.100.1/24` | NOT TESTED |
-| Management | LuCI and SSH | NOT TESTED |
-| WAN | DHCP, PPPoE, IPv4, IPv6 | NOT TESTED |
-| Services | DHCP, DNS ports `53`, `3053`, `6053`, `15353`, `15355`, firewall with optional services disabled | NOT TESTED |
-| Hardware | Both physical Ethernet ports and LED mapping | NOT TESTED |
-| Hardware | USB, eMMC, MicroSD, reset key, status/LAN/WAN LEDs | NOT TESTED |
-| Lifecycle | PassWall and PassWall2 enable/disable/boot/reboot persistence | NOT TESTED |
-| Lifecycle | SmartDNS and AdGuard Home enable/disable/boot/reboot persistence | NOT TESTED |
-| DNS | SmartDNS/AdGuard Home dependency, startup, and port behavior | NOT TESTED |
-| Routing | WeChatDirect in PassWall and PassWall2 | NOT TESTED |
-| Upgrade | OTA configuration retention and idempotent merge on target | NOT TESTED |
+| Base | Fixed signed OpenWrt v25.12.5 commit `f0a60eee…` selected | PASS |
+| Base | Old iStoreOS source, feeds and formal workflow entry removed | PASS (static migration audit) |
+| Board | Official OpenWrt has no `embedfire_doornet2` profile; repository integration is required | PASS (source audit) |
+| Board | DoorNet2 RK3399 DTS overlay and Linux 6.12 DTB Makefile patch apply to fixed source | PASS (static source check) |
+| Board | 1 GB DDR3L U-Boot configuration includes DDR3 and excludes LPDDR4 | PASS (static source check) |
+| Image | Standard-OpenWrt DoorNet2 profile builds a complete cloud image | NOT TESTED |
+| Image | ext4 and squashfs sysupgrade artifacts, fwtool metadata, MBR/FIT offsets and SHA256 | NOT TESTED |
+| Defaults | Clean-install LAN `192.168.100.1/24`; no R76S address | PASS (configuration/static source check) |
+| iStore | Pinned independent iStore `luci-app-store` feed and `luci-compat` selected | PASS (source audit) |
+| iStore | iStore loads and resolves application dependencies on the target | NOT TESTED |
+| Plugins | PassWall, PassWall2, SmartDNS, AdGuard Home, ChinaDNS-NG and Argon selected | PASS (configuration check) |
+| Policy | WeChatDirect additive merge and service-enable preservation in built rootfs | NOT TESTED |
+| Lifecycle | Plugin enable/disable, autostart and reboot persistence on hardware | NOT TESTED |
+| DNS | Disabled-service baseline and all DNS port interactions on hardware | NOT TESTED |
+| Boot | MicroSD/eMMC boot, DDR3L training, Ethernet mapping, LEDs and reset key | NOT TESTED |
+| Management | LAN reachability, LuCI, SSH, DHCP, PPPoE, IPv4 and IPv6 | NOT TESTED |
+| Upgrade | Same-line OTA retention/idempotent merge on hardware | NOT TESTED |
+| Upgrade | iStoreOS-to-standard-OpenWrt configuration-preserving OTA | NOT SUPPORTED / NOT TESTED |
 
-No item may be changed to PASS without logs or other reproducible evidence.
+Only reproducible logs or real-device evidence may change a row to `PASS`.

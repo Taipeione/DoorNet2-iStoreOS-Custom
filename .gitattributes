@@ -1,0 +1,3 @@
+# Unified-diff context deliberately preserves upstream indentation.
+board/doorNet2/feeds/*.patch -whitespace
+board/doorNet2/kernel/*.patch -whitespace

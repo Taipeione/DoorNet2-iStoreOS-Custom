@@ -4,13 +4,11 @@ Audit date: 2026-10-17. This record is based on the GitHub Actions run API and
 the complete retained logs for runs 5--18. It describes GitHub-hosted builds
 only; no local compiler output is used as evidence.
 
-## Scope and current state
+## Scope and historical state
 
 - Repository: `Taipeione/DoorNet2-iStoreOS-Custom`, branch `main`, public.
 - Workflow and job identity: `DoorNet2-V0.1`.
-- Run 19 (`dc54b5bfc7b0b23ce7a288eac54e0a2172c8cdb9`) is the one active
-  validation of the `libyaml` dependency fix. It is not a duplicate of run 18
-  and must not be cancelled merely because it is long-running.
+- The final iStoreOS-route run, [#23](https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/39058691038), was deliberately cancelled after the project formally moved to a standard OpenWrt base. Its logs/artifact are retained, but it is not a failure to remediate on the new route.
 - Runs numbered 1--4 in the previous history document return GitHub API 404 as
   of this audit. Their published historical notes are therefore not treated as
   independently verified evidence here. Runs 5--18 are retrievable.
@@ -51,6 +49,7 @@ source metadata before entering the complete world build. The workflow also
 ignores documentation-only pushes; source, board, configuration, dependency,
 and workflow changes still run a complete cloud build.
 
-No run in this table passed artifact verification. Therefore there is no
-release candidate, no SHA256-accepted image, and no authorization to create a
-release.
+No iStoreOS-route run in this table passed artifact verification. The current
+standard-OpenWrt migration has a separate fixed source, feeds and workflow;
+none of these historical artifacts are release inputs. There is no release
+candidate, no SHA256-accepted image, and no authorization to create a release.

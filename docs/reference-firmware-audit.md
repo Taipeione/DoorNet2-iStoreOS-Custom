@@ -100,9 +100,10 @@ The reference must not be copied into the current project: it has a different
 OpenWrt revision, Linux/U-Boot versions, rootfs layout, boot partition offsets,
 LAN default, package set, and upgrade implementation. In particular, the
 reference's 32 MiB partition start and 96 MiB rootfs start are recorded for
-comparison only; the current iStoreOS image recipe must be verified from its
-own cloud artifact before any layout change is considered. No source DTS,
-U-Boot patch, binary, or partition-table change was justified by this audit.
+comparison only. The retired iStoreOS image recipe is not a migration input;
+the new standard-OpenWrt image must verify its own layout before any change is
+considered. No source DTS, U-Boot patch, binary, or partition-table change was
+justified by this audit.
 
 The next safe action is a GitHub-hosted DoorNet2-V0.1 full build and structural
 artifact verification. Physical boot, memory training, Ethernet mapping,

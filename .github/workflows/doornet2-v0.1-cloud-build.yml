@@ -47,12 +47,11 @@ jobs:
           } | tee work/cloud-build-identity.txt
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test "$RUNNER_ENVIRONMENT" = github-hosted
-          # Remove unused preinstalled SDKs from this disposable GitHub VM only.
           sudo rm -rf /usr/local/lib/android /opt/ghc /usr/share/dotnet /usr/local/share/powershell /usr/local/share/chromium
           sudo apt-get clean
           df -h "$GITHUB_WORKSPACE"
 
-      - name: Install iStoreOS/OpenWrt build dependencies
+      - name: Install OpenWrt build dependencies
         shell: bash
         run: |
           set -o pipefail
@@ -67,40 +66,37 @@ jobs:
           sudo apt-get clean
           df -h "$GITHUB_WORKSPACE"
 
-      - name: Precheck source pins and DoorNet2 board integration
+      - name: Check out fixed standard OpenWrt source and precheck integration
         shell: bash
         run: |
           set -o pipefail
-          # shellcheck disable=SC1091
           source config/source.env
           mkdir -p work
-          git clone --filter=blob:none --no-checkout "$ISTOREOS_REPOSITORY" work/istoreos
-          git -C work/istoreos fetch --depth=1 origin "$ISTOREOS_COMMIT"
-          git -C work/istoreos checkout --detach FETCH_HEAD
-          test "$(git -C work/istoreos rev-parse HEAD)" = "$ISTOREOS_COMMIT"
+          git clone --filter=blob:none --no-checkout "$OPENWRT_REPOSITORY" work/openwrt
+          git -C work/openwrt fetch --depth=1 origin "$OPENWRT_COMMIT"
+          git -C work/openwrt checkout --detach FETCH_HEAD
+          test "$(git -C work/openwrt rev-parse HEAD)" = "$OPENWRT_COMMIT"
           {
-            scripts/apply-board-support.sh "$GITHUB_WORKSPACE/work/istoreos"
-            scripts/verify-v0.1.sh "$GITHUB_WORKSPACE/work/istoreos"
+            scripts/apply-board-support.sh "$GITHUB_WORKSPACE/work/openwrt"
+            scripts/verify-v0.1.sh "$GITHUB_WORKSPACE/work/openwrt"
+            grep -q '^OPENWRT_VERSION=v25.12.5$' config/source.env
             grep -q '192\.168\.100\.1' configs/doorNet2-v0.1.config
             ! grep -q '192\.168\.50\.1' configs/doorNet2-v0.1.config
-            grep -q '^CONFIG_VERSION_NUMBER="V0.1"$' configs/doorNet2-v0.1.config
-            grep -q '^CONFIG_VERSION_CODE="DoorNet2-V0.1"$' configs/doorNet2-v0.1.config
-            git -C work/istoreos status --short
+            git -C work/openwrt status --short
           } 2>&1 | tee -a work/cloud-build.log
 
-      - name: Restore verified source-download cache
+      - name: Restore verified OpenWrt source-download cache
         uses: actions/cache@v4
         with:
-          path: work/istoreos/dl
-          key: doornet2-v0.1-downloads-${{ runner.os }}-${{ hashFiles('config/source.env', 'config/feeds.conf') }}
+          path: work/openwrt/dl
+          key: doornet2-v0.1-openwrt-downloads-${{ runner.os }}-${{ hashFiles('config/source.env', 'config/feeds.conf') }}
 
       - name: Compile complete firmware and target policy integration test
         id: full_build
         shell: bash
         run: |
           set -o pipefail
-          mkdir -p work
-          scripts/build-v0.1.sh "$GITHUB_WORKSPACE/work/istoreos" 2>&1 | tee -a work/cloud-build.log
+          scripts/build-v0.1.sh "$GITHUB_WORKSPACE/work/openwrt" 2>&1 | tee -a work/cloud-build.log
 
       - name: Verify firmware images and write cloud provenance
         id: artifact_check
@@ -116,45 +112,37 @@ jobs:
 
           | Check | Result |
           |---|---|
-          | Exact GitHub-hosted runner commit and pinned source | PASS |
-          | Static DoorNet2 RK3399 Precheck | PASS |
-          | Complete cloud firmware build, including U-Boot and ext4/squashfs images | PASS |
-          | Image gzip CRC, fwtool OTA metadata, MBR layout, SHA256 and required package manifest | PASS |
-          | 1 GB DDR3L U-Boot configuration and expected SPL/FIT image offsets | PASS |
-          | Built-rootfs firmware identity, default LAN board script and emulated idempotent WeChatDirect policy merge | PASS |
-          | Real DoorNet2 boot from MicroSD or eMMC | NOT TESTED |
-          | DDR3L training and loader execution on the owner's physical board | NOT TESTED |
-          | Physical Ethernet, LAN reachability, LuCI and SSH | NOT TESTED |
-          | PassWall, PassWall2, SmartDNS, AdGuard Home and ChinaDNS-NG runtime lifecycle | NOT TESTED |
-          | DNS, WeChatDirect routing and OTA restore on real hardware | NOT TESTED |
+          | Exact GitHub-hosted runner, DoorNet2 commit, and fixed OpenWrt v25.12.5 commit | PASS |
+          | Standard OpenWrt DoorNet2 RK3399 static integration precheck | PASS |
+          | Complete cloud firmware build with ext4 and squashfs sysupgrade images | PASS |
+          | Image gzip CRC, fwtool metadata, MBR/FIT offsets, SHA256, and required package manifest | PASS |
+          | Built-rootfs firmware identity, clean-install LAN, and WeChatDirect merge policy | PASS |
+          | iStore application package in built image | PASS |
+          | Real DoorNet2 boot, DDR3L training, Ethernet, LuCI, and SSH | NOT TESTED |
+          | PassWall, PassWall2, SmartDNS, AdGuard Home, ChinaDNS-NG lifecycle on hardware | NOT TESTED |
+          | DNS, WeChatDirect routing, and OTA restore on hardware | NOT TESTED |
 
-          No real-device flashing or eMMC modification was performed by this workflow.
+          No real-device flashing, eMMC write, partition change, or bootloader write was performed.
           EOF
           (
             cd "$BUILD_OUTPUT_DIR"
-            sha256sum \
-              DoorNet2-V0.1-*-sysupgrade.img.gz \
-              DoorNet2-V0.1-*.manifest \
-              profiles.json \
-              DoorNet2-V0.1-BuildInfo.txt \
-              DoorNet2-V0.1-Version.txt \
-              DoorNet2-V0.1-Test-Matrix.md
+            sha256sum DoorNet2-V0.1-*-sysupgrade.img.gz DoorNet2-V0.1-*.manifest profiles.json DoorNet2-V0.1-BuildInfo.txt DoorNet2-V0.1-Version.txt DoorNet2-V0.1-Test-Matrix.md
           ) | tee "$BUILD_OUTPUT_DIR/DoorNet2-V0.1-SHA256SUMS"
           {
             echo "### DoorNet2-V0.1 cloud firmware build: PASS"
             echo
-            echo "- Repository commit: `$GITHUB_SHA`"
-            echo "- Runner: GitHub-hosted `ubuntu-24.04`"
-            echo "- Target: `rockchip/armv8/embedfire_doornet2` (RK3399)"
-            echo "- Source: iStoreOS commit `$(git -C work/istoreos rev-parse HEAD)`"
-            echo "- Version: `DoorNet2-V0.1`; Linux `6.6.144`"
+            echo "- Repository commit: \`$GITHUB_SHA\`"
+            echo "- OpenWrt: \`v25.12.5\` / \`$(git -C work/openwrt rev-parse HEAD)\`"
+            echo "- Runner: GitHub-hosted \`ubuntu-24.04\`"
+            echo "- Target: \`rockchip/armv8/embedfire_doornet2\` (RK3399, 1GB DDR3L target)"
+            echo "- Version: \`DoorNet2-V0.1\`; Linux \`6.12.94\`"
             echo "- Images: ext4 and squashfs sysupgrade; see artifact checksums below."
             echo
-            echo '```text'
+            echo '\`\`\`text'
             cat "$BUILD_OUTPUT_DIR/DoorNet2-V0.1-SHA256SUMS"
-            echo '```'
+            echo '\`\`\`'
             echo
-            echo 'This is a successful cloud compile and artifact check only. Device boot, service lifecycle, DNS runtime, OTA restore, and hardware acceptance remain NOT TESTED.'
+            echo 'Cloud compilation and artifact checks do not establish real-device boot, service lifecycle, DNS routing, or OTA recovery; these remain NOT TESTED.'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Preserve build logs, identity, and any generated artifacts
@@ -178,8 +166,8 @@ jobs:
             echo '### DoorNet2-V0.1 cloud firmware build: NOT PASSED'
             echo
             echo "- Repository commit: $GITHUB_SHA"
+            echo "- OpenWrt source: v25.12.5 / $(awk -F= '$1 == \"OPENWRT_COMMIT\" {print $2}' config/source.env)"
             echo "- Full build step: ${{ steps.full_build.outcome }}"
             echo "- Artifact verification step: ${{ steps.artifact_check.outcome }}"
-            echo '- Build log and any partial artifacts are attached to this run as an Actions Artifact.'
-            echo '- No local build is used as a substitute for this result.'
+            echo '- Build log and any partial artifacts are attached to this run. No local build substitutes for this result.'
           } >> "$GITHUB_STEP_SUMMARY"

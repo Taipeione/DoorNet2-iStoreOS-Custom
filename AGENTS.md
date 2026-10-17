@@ -1,23 +1,39 @@
-# DoorNet2 iStoreOS Custom Firmware
+# DoorNet2 Custom Firmware
 
-This public repository is the DoorNet2 RK3399 firmware project. The current formal project version is exactly `DoorNet2-V0.1`; later versions are `DoorNet2-V0.2`, `DoorNet2-V0.3`, and so on. Do not use the R76S `R76S-V1.4.6` version scheme.
+This public repository builds DoorNet2 RK3399 firmware from **standard
+OpenWrt**, not iStoreOS. The formal project version is exactly
+`DoorNet2-V0.1`; later versions are `DoorNet2-V0.2`, `DoorNet2-V0.3`, and so
+on.
 
 ## Permanent rules
 
-- DoorNet2 is an independent RK3399 target. Never copy R76S RK3576 board files, U-Boot, partitions, boot configuration, or Ethernet mappings.
-- A clean install must default to LAN `192.168.100.1/24` (`255.255.255.0`). `192.168.50.1` is forbidden for DoorNet2.
-- Configuration-preserving OTA must retain LAN, WAN, PPPoE, IPv4, IPv6, DHCP, DNS, firewall, proxy nodes, subscriptions, rules, custom settings, and service enablement state.
-- New configuration must be idempotent and incremental: preserve existing user values and do not duplicate entries on repeated upgrades.
-- PassWall and PassWall2 are preinstalled but disabled by default. Their enable/disable state and lifecycle are independent and persistent.
-- WeChatDirect is a separate direct-connection rule set supported by both PassWall and PassWall2; do not fold it into ordinary proxy rules.
-- DNS must still work when all optional services are disabled. Audit ports `53`, `3053`, `6053`, `15353`, and `15355` for IPv4 and IPv6.
-- Never write to a real DoorNet2 eMMC, alter real-device partitions or bootloader, or perform a dangerous flash operation without explicit user confirmation.
-- Do not claim hardware acceptance until the feature is tested on real DoorNet2 hardware.
+- Keep `Taipeione/DoorNet2-iStoreOS-Custom` public on `main`.
+- A clean installation must use LAN `192.168.100.1/24`. Upgrades must preserve
+  an existing user LAN configuration.
+- DoorNet2 is an RK3399 board with 1 GB DDR3L. Never use R76S/RK3576 files or
+  claim support for DoorNet2's distinct LPDDR4 variant.
+- The fixed base source is the signed OpenWrt `v25.12.5` commit recorded in
+  `config/source.env`. iStore is only a separately pinned application feed.
+- Retain the DoorNet2 DTS/U-Boot, but do not copy the reference firmware's
+  partitions or boot binaries. Hardware-facing changes require evidence.
+- PassWall, PassWall2, SmartDNS, AdGuard Home and ChinaDNS-NG default to a
+  non-disruptive state. The policy layer must not override service enablement.
+- OTA preserves user configuration within the same compatible firmware line.
+  Cross-system iStoreOS-to-standard-OpenWrt migration is unsupported until
+  explicitly tested.
+- Never write a real device's eMMC, partitions, or bootloader without a
+  separate user authorization.
 
-## Build and review
+## Build and release
 
-**Permanent build rule:** Every DoorNet2 firmware compilation must run in GitHub Actions on a GitHub-hosted runner. Do not compile firmware on the Mac, local Linux, or local Docker. The repository is intentionally public; do not change its visibility. Use the independent DoorNet2 `DoorNet2-V0.1`, `DoorNet2-V0.2`, `DoorNet2-V0.3` version sequence. The formal build script must refuse execution outside the authorized GitHub-hosted Actions repository context. Local work is limited to development, static checks, GitHub operations, and inspection of cloud logs/artifacts.
+All formal firmware compilation runs only on a GitHub-hosted Actions runner.
+Local work is limited to source editing, static checks, and cloud artifact/log
+inspection. Workflow and job names must both be `DoorNet2-V0.1`; the run name
+must be `DoorNet2-V0.1 #${{ github.run_number }}`. Formal artifacts and the
+release title use the `DoorNet2-V0.1` prefix exactly.
 
-Every change must be checked against the target iStoreOS/kernel/U-Boot versions, DTS compilation, image layout, default LAN, platform name, DTB, boot files, and SHA256 metadata. Review `git diff` for secrets, debug residue, and unintended files; commit reliable stages with descriptive messages and push `origin/main`.
-
-Release titles, firmware display identity, firmware filenames, build metadata, OTA metadata, summaries, and documentation must use the exact formal name `DoorNet2-V0.1` (then `DoorNet2-V0.2`, etc.). `V0.1` alone may appear only as a version-number field, never as the formal project name. If memory variant, PHY, partition map, or bootloader behavior is uncertain, document it and stop the related hardware change instead of guessing.
+Before pushing, inspect the diff for secrets and unintended changes, run
+applicable YAML/shell/static checks, and update the test matrix honestly.
+Cloud compilation is not device acceptance: boot, DDR3L training, Ethernet,
+service lifecycle, DNS, WeChatDirect routing and OTA recovery remain
+`NOT TESTED` until proven on hardware.
