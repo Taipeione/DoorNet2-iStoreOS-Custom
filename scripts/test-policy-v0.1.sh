@@ -1,5 +1,8 @@
 #!/bin/sh
-set -eu
+# Keep this cloud-only target-rootfs test auditable: `set -x` makes a failed
+# assertion identify the last evaluated policy command in the Actions log.
+PS4='+ policy-test: '
+set -eux
 
 rootfs=${1:-}
 [ -n "${2:-}" ] && policy_script=$2 || policy_script=
