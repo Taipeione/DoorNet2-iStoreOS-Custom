@@ -69,6 +69,22 @@ replace_once(
     "define U-Boot/Default\n  BUILD_TARGET:=rockchip\n  UENV:=default\n  HIDDEN:=1\n  BUILD_SUBTARGET:=armv8\n  DEFAULT:=n\n",
 )
 
+# The pinned uboot-rockchip feed also marks generic RK3568/RK3588 EasePi
+# variants default-y. Keep them available for their own devices, but do not
+# select them while building this RK3399 DoorNet2 image.
+rk_uboot = source / "package/boot/uboot-rockchip/Makefile"
+for board in ("easepi-rk3568", "easepi-rk3568-rk809", "easepi-rk3588"):
+    old = f"define U-Boot/{board}\n  $(U-Boot/"
+    start = rk_uboot.read_text().find(old)
+    if start < 0:
+        raise SystemExit(f"anchor not found: {rk_uboot}: {board}")
+    block_end = rk_uboot.read_text().find("endef\n", start)
+    block = rk_uboot.read_text()[start:block_end]
+    if "  DEFAULT:=y\n" in block:
+        replace_once(rk_uboot, block, block.replace("  DEFAULT:=y\n", "  DEFAULT:=n\n", 1))
+    elif "  DEFAULT:=n\n" not in block:
+        raise SystemExit(f"default selector missing: {rk_uboot}: {board}")
+
 for relative in (
     "target/linux/rockchip/armv8/base-files/etc/board.d/01_leds",
     "target/linux/rockchip/armv8/base-files/etc/board.d/02_network",
