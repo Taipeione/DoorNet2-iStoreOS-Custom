@@ -109,3 +109,22 @@ public repository. Local checks are not firmware-build evidence.
   from the artifact directory. This retains strict checksum verification and
   fails if any formal artifact is missing or altered. Release remains blocked
   until the replacement GitHub-hosted build passes.
+
+## Run #8 — upstream dns2socks source asset unavailable
+
+- Commit: `d0a9d2718232b08b1d19f7cb7f4a7a98a2e92cbc`
+- Run: https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/39136273497
+- Result: the checksum-directory repair was present in this commit, but did
+  not run because the full firmware build failed earlier.
+- First fatal error: PassWall's `dns2socks` recipe requested
+  `SourceCode.zip` from the pinned upstream release URL. GitHub and each
+  OpenWrt source mirror returned HTTP 404, ending with
+  `package/feeds/passwall_packages/dns2socks/download`.
+- Root cause: an upstream release asset referenced by the fixed PassWall feed
+  revision was removed; this is unrelated to the DoorNet2 DTS, U-Boot,
+  OpenWrt package closure, or artifact-verification changes.
+- Corrective action: advance the exact-pinned `passwall_packages` feed by one
+  verified upstream commit (`3ab138…` to its direct child `3ce5ce…`). That
+  commit replaces only the unavailable download with the package's tracked
+  source files. The next GitHub-hosted build must prove the package compiles
+  and that no new dependency error replaces it.
