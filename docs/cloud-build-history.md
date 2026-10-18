@@ -89,3 +89,23 @@ public repository. Local checks are not firmware-build evidence.
   strict gzip integrity validation on that stripped stream. The original
   firmware remains unchanged. Release remains blocked until a replacement
   cloud run passes all artifact checks.
+
+## Run #7 — full firmware compilation completed; checksum verifier failed
+
+- Commit: `f882e09fcf747d9d00eb8f5976c530775b2beb0b`
+- Run: https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/39128830265
+- Evidence: the full cloud build completed successfully. Both generated
+  `embedfire_doornet2` ext4 and squashfs sysupgrade images were copied to the
+  formal `DoorNet2-V0.1-rk3399-1gb-ddr3l-*` names. The updated verifier also
+  completed its fwtool metadata and stripped-gzip integrity checks before
+  producing BuildInfo, Version and SHA256 files.
+- First fatal error: `sha256sum -c` could not open each filename listed in
+  `DoorNet2-V0.1-SHA256SUMS`.
+- Root cause: the manifest deliberately contains portable relative names, but
+  the verifier invoked `sha256sum -c` from the repository root rather than its
+  output directory. The files existed under `artifacts/`; no image was absent
+  or renamed.
+- Corrective action: run both manifest generation and manifest verification
+  from the artifact directory. This retains strict checksum verification and
+  fails if any formal artifact is missing or altered. Release remains blocked
+  until the replacement GitHub-hosted build passes.

@@ -67,4 +67,4 @@ done
 } > "$output_dir/DoorNet2-V0.1-BuildInfo.txt"
 echo 'DoorNet2-V0.1' > "$output_dir/DoorNet2-V0.1-Version.txt"
 (cd "$output_dir" && sha256sum DoorNet2-V0.1-* > DoorNet2-V0.1-SHA256SUMS)
-sha256sum -c "$output_dir/DoorNet2-V0.1-SHA256SUMS"
+(cd "$output_dir" && sha256sum -c DoorNet2-V0.1-SHA256SUMS)
