@@ -62,6 +62,17 @@ jobs:
           cp cloud-build.log "$BUILD_OUTPUT_DIR/DoorNet2-V0.1-build.log"
           echo 'Cloud build and artifact checks passed. Real-device boot, network, plugins, DNS, WeChatDirect and OTA recovery remain NOT TESTED.' > "$BUILD_OUTPUT_DIR/DoorNet2-V0.1-Test-Matrix.txt"
           scripts/verify-cloud-artifacts-v0.1.sh "$GITHUB_WORKSPACE/work/openwrt" "$BUILD_OUTPUT_DIR" "$GITHUB_SHA"
+      - name: Preserve build diagnostics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-diagnostics
+          for source_file in work/openwrt/.config work/openwrt/tmp/.packageinfo; do
+            if test -f "$source_file"; then
+              cp "$source_file" "build-diagnostics/$(basename "$source_file" | sed 's/^\.//')"
+            fi
+          done
       - name: Upload logs and generated artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -69,8 +80,7 @@ jobs:
           name: DoorNet2-V0.1-${{ github.sha }}-run-${{ github.run_number }}
           path: |
             cloud-build.log
-            work/openwrt/.config
-            work/openwrt/tmp/.packageinfo
+            build-diagnostics/
             artifacts/
           retention-days: 30
           compression-level: 0

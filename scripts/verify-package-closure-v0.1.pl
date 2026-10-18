@@ -70,6 +70,11 @@ while (my $name = shift @queue) {
         my $child;
         if ($dependency =~ /^\+([A-Za-z0-9][A-Za-z0-9+_.-]*)$/) {
             $child = $1;
+        } elsif ($dependency =~ /^([A-Za-z0-9][A-Za-z0-9+_.-]*)$/) {
+            # A bare metadata entry is a mandatory package dependency.  For
+            # example, the OpenWrt xz utility package requires its xz-utils
+            # meta package even though that edge has no leading '+'.
+            $child = $1;
         } elsif ($dependency =~ /^\+(!?)([A-Za-z0-9_]+):([A-Za-z0-9][A-Za-z0-9+_.-]*)$/) {
             my ($negated, $condition, $candidate) = ($1, $2, $3);
             my $condition_enabled = $symbols{$condition} ? 1 : 0;

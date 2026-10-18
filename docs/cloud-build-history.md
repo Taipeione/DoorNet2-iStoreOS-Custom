@@ -48,3 +48,22 @@ public repository. Local checks are not firmware-build evidence.
   regression fixture proves that enabled tar ACL support materializes `libacl`
   and its `libattr` dependency before downloads or compilation. No firmware
   artifact was produced by run #4.
+
+## Run #5 — failed during rootfs package installation
+
+- Commit: `1fac5d221f309b9e2727601743c79cd650edae08`
+- Run: https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/39114017460
+- Evidence: the run reached the rootfs `apk` installation phase. The earlier
+  `libacl.so.1` failure did not recur, so the conditional-dependency repair was
+  effective. `gettext_noop redefined` was only a compiler warning and did not
+  stop the build.
+- First fatal error: `apk` could not select `xz-utils`; package `xz-5.8.1-r1`
+  requires it, but the package index did not contain the unselected meta
+  package.
+- Root cause: OpenWrt's xz Makefile declares `xz-utils` as a bare mandatory
+  metadata dependency. The closure checker still handled only `+package` and
+  `+CONFIG_SYMBOL:package` terms, so it did not materialize that dependency.
+- Corrective action: traverse bare mandatory package edges as well, with a
+  regression fixture for `xz -> xz-utils`. Failure diagnostics are now copied
+  under non-hidden artifact names so final configuration and metadata are
+  retrievable on every run. No firmware artifact was produced by run #5.

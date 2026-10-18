@@ -11,6 +11,7 @@ trap 'rm -rf "$work_dir"' EXIT HUP INT TERM
 printf '%s\n' \
   'CONFIG_PACKAGE_root=y' \
   'CONFIG_PACKAGE_tar=y' \
+  'CONFIG_PACKAGE_xz=y' \
   'CONFIG_PACKAGE_TAR_POSIX_ACL=y' > "$work_dir/.config"
 printf '%s\n' 'root' > "$work_dir/required-packages"
 printf '%s\n' \
@@ -19,6 +20,11 @@ printf '%s\n' \
   'Source-Makefile: feeds/packages/utils/tar/Makefile' \
   'Package: tar' \
   'Depends: +PACKAGE_TAR_POSIX_ACL:libacl +PACKAGE_TAR_XATTR:libattr' \
+  'Source-Makefile: feeds/packages/utils/xz/Makefile' \
+  'Package: xz' \
+  'Depends: xz-utils +liblzma' \
+  'Package: xz-utils' \
+  'Package: liblzma' \
   'Source-Makefile: feeds/packages/utils/acl/Makefile' \
   'Package: libacl' \
   'Depends: +libattr' \
@@ -32,6 +38,8 @@ perl "$repo_root/scripts/verify-package-closure-v0.1.pl" --enable-missing \
   "$work_dir/source" "$work_dir/.config" "$work_dir/required-packages"
 grep -qx 'CONFIG_PACKAGE_libacl=y' "$work_dir/.config"
 grep -qx 'CONFIG_PACKAGE_libattr=y' "$work_dir/.config"
+grep -qx 'CONFIG_PACKAGE_xz-utils=y' "$work_dir/.config"
+grep -qx 'CONFIG_PACKAGE_liblzma=y' "$work_dir/.config"
 perl "$repo_root/scripts/verify-package-closure-v0.1.pl" \
   "$work_dir/source" "$work_dir/.config" "$work_dir/required-packages"
 printf '%s\n' 'DoorNet2-V0.1 conditional package-closure regression: PASS'
