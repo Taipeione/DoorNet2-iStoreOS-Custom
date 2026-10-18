@@ -20,6 +20,7 @@ check_not rg -q '192\.168\.50\.1' "$repo_root/configs/doorNet2-v0.1.config"
 check rg -q 'CONFIG_VERSION_CODE="DoorNet2-V0\.1"' "$repo_root/configs/doorNet2-v0.1.config"
 check rg -F -q '#include "rk3399.dtsi"' "$repo_root/patches/kernel/rk3399-doornet2.dtsi"
 check_not rg -q 'rk3399-opp\.dtsi|rockchip/rk3399\.dtsi' "$repo_root/patches/kernel/rk3399-doornet2.dtsi"
+check_not rg -q 'rk3399-opp\.dtsi' "$repo_root/patches/uboot/999-doornet2-rk3399.patch"
 check test -f "$source_dir/target/linux/rockchip/files/arch/arm64/boot/dts/rockchip/rk3399-doornet2.dts"
 check test -f "$source_dir/package/boot/uboot-rockchip/patches/999-doornet2-rk3399.patch"
 [ "$fail" -eq 0 ] || exit 1
