@@ -67,3 +67,25 @@ public repository. Local checks are not firmware-build evidence.
   regression fixture for `xz -> xz-utils`. Failure diagnostics are now copied
   under non-hidden artifact names so final configuration and metadata are
   retrievable on every run. No firmware artifact was produced by run #5.
+
+## Run #6 — full firmware compilation completed; artifact verifier failed
+
+- Commit: `6e2242b00337fda25015136e40e92423699129b5`
+- Run: https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/39122808591
+- Evidence: `Compile complete firmware` completed successfully. The cloud log
+  records both ext4 and squashfs sysupgrade images, the Rockchip/RK3399 target,
+  the `embedfire,doornet2` supported-device entry and the 192.168.100.1
+  preinit default. The run's final `.config` also contains `xz-utils`, so the
+  bare-dependency repair from run #5 was effective.
+- First fatal error: the post-build artifact verifier ran `gzip -t` directly
+  on an OpenWrt sysupgrade image. OpenWrt had appended its validated `fwtool`
+  JSON metadata trailer, so GNU gzip correctly decompressed the stream but
+  returned status 2 for trailing data.
+- Root cause: the project verifier treated a supported OpenWrt image-format
+  feature as corruption.
+- Corrective action: extract and validate the `fwtool` metadata (including
+  DoorNet2 version, target, board and supported device); strip the known
+  trailer from a disposable copy with the same OpenWrt `fwtool` tool; then run
+  strict gzip integrity validation on that stripped stream. The original
+  firmware remains unchanged. Release remains blocked until a replacement
+  cloud run passes all artifact checks.
