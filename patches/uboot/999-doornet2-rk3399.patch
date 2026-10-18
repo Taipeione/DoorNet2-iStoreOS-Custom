@@ -151,7 +151,7 @@
 +
 --- /dev/null
 +++ b/arch/arm/dts/rk3399-doornet2.dtsi
-@@ -0,0 +1,750 @@
+@@ -0,0 +1,749 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +
 +

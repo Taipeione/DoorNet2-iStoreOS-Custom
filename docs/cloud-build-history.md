@@ -17,3 +17,13 @@ public repository. Local checks are not firmware-build evidence.
   the fixed OpenWrt revision. The U-Boot DTC stopped at that include.
 - Corrective action: remove that U-Boot-only invalid include and reject it in
   the pre-build verification script. No firmware artifact was produced.
+
+## Run #3 — failed during U-Boot package preparation
+
+- Commit: `fbfd1d3b75bfe5e070fefecb9d1a035b4c495182`
+- Run: https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/39104783578
+- First fatal error: after removal of one added DTS line, the unified-diff hunk
+  header still claimed 750 added lines. Git therefore rejected the patch as
+  corrupt at line 906 before U-Boot source preparation.
+- Corrective action: correct the hunk count to 749 and make `git apply
+  --numstat` a mandatory static precheck. No firmware artifact was produced.
