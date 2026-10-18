@@ -16,4 +16,5 @@ an application store; the base system is official OpenWrt.
 
 See [docs/source-selection.md](docs/source-selection.md),
 [docs/hardware-audit.md](docs/hardware-audit.md), and
-[docs/test-matrix.md](docs/test-matrix.md).
+[docs/test-matrix.md](docs/test-matrix.md). The actual cloud-run record is in
+[docs/cloud-build-history.md](docs/cloud-build-history.md).

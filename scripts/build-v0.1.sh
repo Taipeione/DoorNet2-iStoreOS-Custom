@@ -27,10 +27,21 @@ git -C "$source_dir/package/luci-theme-argon" fetch --depth=1 origin "$ARGON_COM
 git -C "$source_dir/package/luci-theme-argon" checkout --detach FETCH_HEAD
 
 make -C "$source_dir" defconfig
+required_packages_file="$repo_root/config/required-packages-v0.1.txt"
 while IFS= read -r package_name; do
 	case "$package_name" in ''|'#'*) continue ;; esac
-	grep -q "^CONFIG_PACKAGE_${package_name}=y$" "$source_dir/.config" || { echo "Required package dropped: $package_name" >&2; exit 1; }
-done < "$repo_root/config/required-packages-v0.1.txt"
+	sed -i "/^CONFIG_PACKAGE_${package_name}=/d" "$source_dir/.config"
+	printf 'CONFIG_PACKAGE_%s=y\n' "$package_name" >> "$source_dir/.config"
+done < "$required_packages_file"
+
+# Kconfig cannot infer every package-metadata dependency. Normalize roots
+# once, then materialize only unconditional metadata dependencies and recheck.
+make -C "$source_dir" defconfig
+make -C "$source_dir" target/linux/prepare
+make -C "$source_dir" package/boot/uboot-rockchip/prepare
 "$repo_root/scripts/verify-v0.1.sh" "$source_dir"
+make -C "$source_dir" prepare-tmpinfo
+perl "$repo_root/scripts/verify-package-closure-v0.1.pl" --enable-missing "$source_dir" "$source_dir/.config" "$required_packages_file"
+perl "$repo_root/scripts/verify-package-closure-v0.1.pl" "$source_dir" "$source_dir/.config" "$required_packages_file"
 make -C "$source_dir" -j"${BUILD_JOBS:-3}" V="${BUILD_VERBOSE:-s}" download
 make -C "$source_dir" -j"${BUILD_JOBS:-3}" V="${BUILD_VERBOSE:-s}"
