@@ -27,3 +27,24 @@ public repository. Local checks are not firmware-build evidence.
   corrupt at line 906 before U-Boot source preparation.
 - Corrective action: correct the hunk count to 749 and make `git apply
   --numstat` a mandatory static precheck. No firmware artifact was produced.
+
+## Run #4 — failed after kernel DTS and U-Boot preparation
+
+- Commit: `b60d3f4fac8a9277041ca2bb11c203e43bd72009`
+- Run: https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/39105718113
+- Evidence: the cloud log shows both
+  `rk3399-doornet2.dtb` generation and successful staging of
+  `doornet2-rk3399-u-boot-rockchip.bin`; the U-Boot patch therefore applied
+  and built on the fixed OpenWrt/U-Boot sources.
+- First fatal error: OpenWrt stopped while packaging `tar-1.35-r1.apk` because
+  `libacl.so.1` was not supplied. `tar` enables POSIX ACL support by default
+  when `USE_FS_ACL_ATTR` is enabled, which creates the metadata edge
+  `+PACKAGE_TAR_POSIX_ACL:libacl`.
+- Root cause: the initial closure tool deliberately ignored all conditional
+  metadata edges and only traversed hand-maintained roots. It therefore missed
+  a dependency of an OpenWrt-selected default package.
+- Corrective action: evaluate simple enabled `CONFIG_SYMBOL:package` edges
+  from the final configuration and traverse all selected packages. The added
+  regression fixture proves that enabled tar ACL support materializes `libacl`
+  and its `libattr` dependency before downloads or compilation. No firmware
+  artifact was produced by run #4.
