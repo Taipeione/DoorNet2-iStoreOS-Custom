@@ -1,0 +1,8 @@
+#!/bin/sh
+# Do not enable proxy or DNS-altering services on a clean installation.
+# UCI preserves the user's selections across same-line sysupgrade by default.
+uci -q set doornet2.policy=policy
+uci -q set doornet2.policy.version='DoorNet2-V0.1'
+uci -q set doornet2.policy.wechatdirect_domains='/etc/doornet2/wechatdirect.domains'
+uci -q commit doornet2
+exit 0

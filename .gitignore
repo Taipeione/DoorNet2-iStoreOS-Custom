@@ -1,0 +1,7 @@
+work/
+artifacts/
+*.img
+*.img.gz
+*.sha256
+*.log
+.DS_Store
