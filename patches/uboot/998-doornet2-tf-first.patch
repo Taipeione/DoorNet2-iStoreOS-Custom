@@ -1,0 +1,7 @@
+--- a/include/configs/rockchip-common.h
++++ b/include/configs/rockchip-common.h
+@@ -16,3 +16,3 @@
+ #ifndef BOOT_TARGETS
+-#define BOOT_TARGETS "mmc1 mmc0 nvme scsi usb pxe dhcp spi"
++#define BOOT_TARGETS "mmc0 mmc1 nvme scsi usb pxe dhcp spi"
+ #endif
