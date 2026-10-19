@@ -1,87 +1,221 @@
-name: DoorNet2-V0.1
-run-name: "DoorNet2-V0.1 #${{ github.run_number }}"
+# Upload this single file to .github/workflows/DoorNet2-V0.1-TF-bootfix-TEST.yml
+# Manual, non-release repair job for the EXACT already inspected V0.1 release image.
+# Does not replace the normal source-build workflow; does not modify eMMC.
+name: DoorNet2-V0.1-TF-bootfix-TEST
 
-on:
-  push:
-    branches: [main]
+"on":
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: doornet2-v0.1-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
-  firmware:
-    name: DoorNet2-V0.1
-    runs-on: ubuntu-24.04
-    timeout-minutes: 360
-    env:
-      BUILD_JOBS: 3
-      BUILD_VERBOSE: s
-      BUILD_OUTPUT_DIR: ${{ github.workspace }}/artifacts
+  tf_bootfix_test:
+    name: DoorNet2-V0.1-TF-bootfix-TEST
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
-      - name: Check out exact project commit
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.sha }}
-          fetch-depth: 1
-      - name: Prepare GitHub-hosted builder
+      - name: Download inspected V0.1 release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          test "$RUNNER_ENVIRONMENT" = github-hosted
-          sudo rm -rf /usr/local/lib/android /opt/ghc /usr/share/dotnet /usr/local/share/powershell
-          sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git ripgrep libncurses-dev libssl-dev rsync unzip zlib1g-dev file wget curl xsltproc swig time python3 python3-setuptools python3-pyelftools python3-yaml patch perl tar gzip xz-utils zstd cpio qemu-utils
-          df -h "$GITHUB_WORKSPACE"
-      - name: Check out fixed standard OpenWrt and run precheck
+          mkdir -p input
+          gh release download DoorNet2-V0.1 \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern 'DoorNet2-V0.1-rk3399-1gb-ddr3l-squashfs-sysupgrade.img.gz' \
+            --dir input
+          test -s input/DoorNet2-V0.1-rk3399-1gb-ddr3l-squashfs-sysupgrade.img.gz
+      - name: Verify input, repair boot targets and disk ID, verify FIT
         shell: bash
         run: |
           set -euo pipefail
-          source config/source.env
-          git clone --filter=blob:none --no-checkout "$OPENWRT_REPOSITORY" work/openwrt
-          git -C work/openwrt fetch --depth=1 origin "$OPENWRT_COMMIT"
-          git -C work/openwrt checkout --detach FETCH_HEAD
-          test "$(git -C work/openwrt rev-parse HEAD)" = "$OPENWRT_COMMIT"
-          scripts/apply-board-support.sh "$GITHUB_WORKSPACE/work/openwrt"
-          scripts/verify-v0.1.sh "$GITHUB_WORKSPACE/work/openwrt"
-      - name: Compile complete firmware
-        id: build
-        shell: bash
-        run: scripts/build-v0.1.sh "$GITHUB_WORKSPACE/work/openwrt" 2>&1 | tee cloud-build.log
-      - name: Verify firmware images and provenance
-        id: verify
-        if: success()
+          python3 - <<'PYTHON'
+          import gzip
+          import hashlib
+          import json
+          import pathlib
+          import struct
+          import zlib
+          
+          SOURCE = pathlib.Path('input/DoorNet2-V0.1-rk3399-1gb-ddr3l-squashfs-sysupgrade.img.gz')
+          OUTPUT = pathlib.Path('output')
+          OUTPUT.mkdir(exist_ok=True)
+          IMAGE = OUTPUT / 'DoorNet2-V0.1-TF-bootfix-TEST.img'
+          GZIP = OUTPUT / 'DoorNet2-V0.1-TF-bootfix-TEST.img.gz'
+          REPORT = OUTPUT / 'DoorNet2-V0.1-TF-bootfix-REPORT.json'
+          SUMS = OUTPUT / 'DoorNet2-V0.1-TF-bootfix-SHA256SUMS'
+          
+          # Only this exact, already inspected V0.1 binary may be patched.
+          INPUT_GZ_SHA256 = '03064db4ca88f8b5899b9d408fd0ea2b3d363abe13d96d9df1a14281ec404c0a'
+          INPUT_IMG_SHA256 = '2cb14438bc5e3ff955729983cae5efc7243bedb5f29da5de6e3a02eef5289d49'
+          EXPECTED_OUTPUT_IMG_SHA256 = '6efcc1875fed6d6de0f435375d380524426781109acdda2a49ce1f7519acb798'
+          OLD_DISK_SIGNATURE = 0x5452574F
+          NEW_DISK_SIGNATURE = 0xB2D20011
+          FIT_OFFSET = 8 * 1024 * 1024
+          ORIGINAL_ENV = b'boot_targets=mmc1 mmc0 nvme scsi usb pxe dhcp spi\0'
+          PATCHED_ENV = b'boot_targets=mmc0 mmc1 nvme scsi usb pxe dhcp spi\0'
+          
+          
+          def sha256(blob):
+              return hashlib.sha256(blob).hexdigest()
+          
+          
+          def get_properties(blob, offset):
+              if blob[offset:offset + 4] != bytes.fromhex('d00dfeed'):
+                  raise RuntimeError('Device tree / FIT header not found')
+              (magic, total, structs, strings, _, _, _, _, _, structs_len) = struct.unpack_from('>10I', blob, offset)
+              if not (0 < total <= 200000 and 0 < structs < total and 0 < strings < total and structs_len > 0):
+                  raise RuntimeError('Bad device-tree bounds')
+              i, end = offset + structs, offset + structs + structs_len
+              names = []
+              props = {}
+              while i < end:
+                  token = struct.unpack_from('>I', blob, i)[0]
+                  i += 4
+                  if token == 1:
+                      end_name = blob.index(0, i, end)
+                      names.append(blob[i:end_name].decode('ascii'))
+                      i = (end_name + 4) & ~3
+                  elif token == 2:
+                      names.pop()
+                  elif token == 3:
+                      length, name_offset = struct.unpack_from('>II', blob, i)
+                      i += 8
+                      name_pos = offset + strings + name_offset
+                      name_end = blob.index(0, name_pos, offset + total)
+                      name = blob[name_pos:name_end].decode('ascii')
+                      path = '/' + '/'.join(x for x in names if x)
+                      if i + length > end:
+                          raise RuntimeError('Invalid property length')
+                      props[(path, name)] = (i, bytes(blob[i:i + length]))
+                      i = (i + length + 3) & ~3
+                  elif token == 4:
+                      pass
+                  elif token == 9:
+                      break
+                  else:
+                      raise RuntimeError(f'Unexpected FDT token {token}')
+              return total, props
+          
+          
+          def prop(props, path, name):
+              return props[(path, name)][1]
+          
+          
+          def main():
+              compressed = SOURCE.read_bytes()
+              if sha256(compressed) != INPUT_GZ_SHA256:
+                  raise RuntimeError('Release asset SHA256 differs from user-inspected V0.1 image; stop without modifying anything')
+              unpacker = zlib.decompressobj(31)
+              original = unpacker.decompress(compressed) + unpacker.flush()
+              if not unpacker.eof:
+                  raise RuntimeError('Incomplete gzip stream')
+              # V0.1 has OpenWrt fwtool metadata following the gzip trailer.
+              if len(original) != 176160768 or sha256(original) != INPUT_IMG_SHA256:
+                  raise RuntimeError('Decompressed image does not match inspected V0.1 image')
+              image = bytearray(original)
+              if image[510:512] != b'\x55\xaa':
+                  raise RuntimeError('Missing MBR')
+              if struct.unpack_from('<I', image, 440)[0] != OLD_DISK_SIGNATURE:
+                  raise RuntimeError('Unexpected MBR disk signature')
+              parts = [struct.unpack_from('<II', image, 446 + 16 * index + 8) for index in range(2)]
+              if parts != [(65536, 32768), (131072, 212992)]:
+                  raise RuntimeError(f'Unexpected partitions: {parts}')
+              if image[32 * 1024 * 1024 + 1024 + 56 : 32 * 1024 * 1024 + 1024 + 58] != b'\x53\xef':
+                  raise RuntimeError('Missing ext4 boot partition')
+              if image[64 * 1024 * 1024 : 64 * 1024 * 1024 + 4] != b'hsqs':
+                  raise RuntimeError('Missing squashfs rootfs')
+          
+              total, props = get_properties(image, FIT_OFFSET)
+              base = FIT_OFFSET + ((total + 3) & ~3)
+              spans = {}
+              for component in ('u-boot', 'atf-1', 'atf-2', 'atf-3', 'atf-4', 'atf-5', 'fdt-1'):
+                  parent = '/images/' + component
+                  relative_offset = struct.unpack('>I', prop(props, parent, 'data-offset'))[0]
+                  length = struct.unpack('>I', prop(props, parent, 'data-size'))[0]
+                  start, end = base + relative_offset, base + relative_offset + length
+                  if not (FIT_OFFSET < start <= end <= 16 * 1024 * 1024):
+                      raise RuntimeError(f'Bad FIT payload bounds for {component}')
+                  if prop(props, parent + '/hash', 'algo') != b'sha256\0':
+                      raise RuntimeError(f'Unexpected hash algorithm: {component}')
+                  if prop(props, parent + '/hash', 'value') != hashlib.sha256(image[start:end]).digest():
+                      raise RuntimeError(f'Original FIT hash invalid: {component}')
+                  spans[component] = (start, end)
+          
+              dtb_pos = spans['fdt-1'][0]
+              _, device_tree = get_properties(image, dtb_pos)
+              if prop(device_tree, '/aliases', 'mmc0') != b'/mmc@fe320000\0':
+                  raise RuntimeError('mmc0 is not the expected TF controller')
+              if prop(device_tree, '/aliases', 'mmc1') != b'/mmc@fe330000\0':
+                  raise RuntimeError('mmc1 is not the expected eMMC controller')
+          
+              start, end = spans['u-boot']
+              if len(ORIGINAL_ENV) != len(PATCHED_ENV):
+                  raise RuntimeError('Invalid binary-safe string lengths')
+              if image[start:end].count(ORIGINAL_ENV) != 1:
+                  raise RuntimeError('Expected exactly one original boot_targets in FIT U-Boot component')
+              offset = image.find(ORIGINAL_ENV, start, end)
+              image[offset:offset + len(ORIGINAL_ENV)] = PATCHED_ENV
+          
+              hash_position, hash_value = props[('/images/u-boot/hash', 'value')]
+              if len(hash_value) != 32:
+                  raise RuntimeError('Wrong FIT hash field length')
+              image[hash_position:hash_position + 32] = hashlib.sha256(image[start:end]).digest()
+              struct.pack_into('<I', image, 440, NEW_DISK_SIGNATURE)
+          
+              for component, (first, last) in spans.items():
+                  current = prop(get_properties(image, FIT_OFFSET)[1], '/images/' + component + '/hash', 'value')
+                  if current != hashlib.sha256(image[first:last]).digest():
+                      raise RuntimeError(f'Post-patch FIT hash invalid: {component}')
+          
+              fixed = bytes(image)
+              if sha256(fixed) != EXPECTED_OUTPUT_IMG_SHA256:
+                  raise RuntimeError('Patched image differs from previously verified test fixture')
+              IMAGE.write_bytes(fixed)
+              with GZIP.open('wb') as outf:
+                  with gzip.GzipFile(filename='', mode='wb', fileobj=outf, compresslevel=9, mtime=0) as comp:
+                      comp.write(fixed)
+              with gzip.open(GZIP, 'rb') as check:
+                  if sha256(check.read()) != sha256(fixed):
+                      raise RuntimeError('Gzip roundtrip mismatch')
+          
+              SUMS.write_text(
+                  f'{sha256(GZIP.read_bytes())}  {GZIP.name}\n',
+                  encoding='utf-8',
+              )
+              REPORT.write_text(json.dumps({
+                  'status': 'STATIC VALIDATION PASSED; REAL DEVICE NOT TESTED',
+                  'purpose': 'TF-card-only experimental repair; NOT an official sysupgrade or firmware release',
+                  'origin': str(SOURCE),
+                  'original_sha256': INPUT_IMG_SHA256,
+                  'result_sha256': sha256(fixed),
+                  'old_boot_targets': ORIGINAL_ENV.decode('ascii').rstrip('\0'),
+                  'new_boot_targets': PATCHED_ENV.decode('ascii').rstrip('\0'),
+                  'old_root_PARTUUID': '5452574f-02',
+                  'new_root_PARTUUID': 'b2d20011-02',
+                  'unchanged': ['SPL', 'TF-A', 'Linux kernel', 'kernel DTB', 'boot script', 'rootfs'],
+                  'unresolved': 'Old eMMC bootloader might still start eMMC without loading TF U-Boot',
+              }, indent=2), encoding='utf-8')
+              print('Verified patched TF TEST image:', GZIP, 'SHA256:', sha256(GZIP.read_bytes()))
+          
+          main()
+          PYTHON
+      - name: Verify checksums
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "$BUILD_OUTPUT_DIR"
-          cp cloud-build.log "$BUILD_OUTPUT_DIR/DoorNet2-V0.1-build.log"
-          echo 'Cloud build and artifact checks passed. Real-device boot, network, plugins, DNS, WeChatDirect and OTA recovery remain NOT TESTED.' > "$BUILD_OUTPUT_DIR/DoorNet2-V0.1-Test-Matrix.txt"
-          scripts/verify-cloud-artifacts-v0.1.sh "$GITHUB_WORKSPACE/work/openwrt" "$BUILD_OUTPUT_DIR" "$GITHUB_SHA"
-      - name: Preserve build diagnostics
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p build-diagnostics
-          for source_file in work/openwrt/.config work/openwrt/tmp/.packageinfo; do
-            if test -f "$source_file"; then
-              cp "$source_file" "build-diagnostics/$(basename "$source_file" | sed 's/^\.//')"
-            fi
-          done
-      - name: Upload logs and generated artifacts
-        if: always()
+          cd output
+          sha256sum -c DoorNet2-V0.1-TF-bootfix-SHA256SUMS
+      - name: Upload TEST image (not a Release)
         uses: actions/upload-artifact@v4
         with:
-          name: DoorNet2-V0.1-${{ github.sha }}-run-${{ github.run_number }}
+          name: DoorNet2-V0.1-TF-bootfix-TEST
           path: |
-            cloud-build.log
-            build-diagnostics/
-            artifacts/
+            output/DoorNet2-V0.1-TF-bootfix-TEST.img.gz
+            output/DoorNet2-V0.1-TF-bootfix-SHA256SUMS
+            output/DoorNet2-V0.1-TF-bootfix-REPORT.json
+          if-no-files-found: error
           retention-days: 30
           compression-level: 0
-          if-no-files-found: warn
