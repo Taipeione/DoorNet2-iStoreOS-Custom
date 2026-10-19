@@ -1,0 +1,104 @@
+name: DoorNet2-V1.0.0
+run-name: "DoorNet2-V1.0.0 #${{ github.run_number }}"
+
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: DoorNet2-V1.0.0-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: DoorNet2-V1.0.0
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install OpenWrt build dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential clang flex bison g++ gawk gcc-multilib gettext \
+            git libncurses-dev libssl-dev python3 python3-pyelftools \
+            python3-setuptools python3-venv rsync unzip file wget curl \
+            subversion swig time zstd xz-utils zip ccache perl ripgrep \
+            pkg-config libelf-dev libz-dev libreadline-dev jq
+          sudo timedatectl set-timezone UTC || true
+
+      - name: Verify source pin and install OpenWrt
+        run: |
+          set -euo pipefail
+          source config/source.env
+          test "$OPENWRT_REPOSITORY" = 'https://github.com/openwrt/openwrt.git'
+          git clone --filter=blob:none --no-checkout "$OPENWRT_REPOSITORY" openwrt
+          git -C openwrt fetch --depth=1 origin "$OPENWRT_COMMIT"
+          git -C openwrt checkout --detach "$OPENWRT_COMMIT"
+          test "$(git -C openwrt rev-parse HEAD)" = "$OPENWRT_COMMIT"
+          echo "OPENWRT_VERSION=$OPENWRT_VERSION" >> "$GITHUB_ENV"
+
+      - name: Verify local sources and patches
+        run: |
+          set -euo pipefail
+          bash -n scripts/*.sh
+          python3 -m py_compile scripts/*.py
+          git apply --numstat patches/uboot/998-doornet2-tf-first.patch
+          git apply --numstat patches/uboot/999-doornet2-rk3399.patch
+          git apply --numstat patches/kernel/999-add-doornet2-dtb.patch
+          tests/verify-package-closure-v1.0.0.sh "$GITHUB_WORKSPACE/openwrt"
+          python3 tests/test-v1.0.0-boot-audit.py
+
+      - name: Compile complete DoorNet2-V1.0.0 firmware
+        env:
+          RUNNER_ENVIRONMENT: github-hosted
+          BUILD_JOBS: "3"
+          BUILD_VERBOSE: "s"
+        run: |
+          set -euo pipefail
+          scripts/build-v1.0.0.sh "$GITHUB_WORKSPACE/openwrt" 2>&1 | tee "$RUNNER_TEMP/DoorNet2-V1.0.0-build.log"
+
+      - name: Verify boot chain and complete cloud artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          scripts/verify-cloud-artifacts-v1.0.0.sh \
+            "$GITHUB_WORKSPACE/openwrt" \
+            "$GITHUB_WORKSPACE/artifacts" \
+            "$GITHUB_SHA"
+          cp "$RUNNER_TEMP/DoorNet2-V1.0.0-build.log" artifacts/DoorNet2-V1.0.0-build.log
+          cp docs/V1.0.0-boot-fix-and-test.md artifacts/DoorNet2-V1.0.0-TestPlan.md
+          (cd artifacts && for f in DoorNet2-V1.0.0-*; do
+            case "$f" in *-SHA256SUMS) continue ;; esac
+            test -f "$f" && sha256sum "$f"
+          done > DoorNet2-V1.0.0-SHA256SUMS)
+          (cd artifacts && sha256sum -c DoorNet2-V1.0.0-SHA256SUMS)
+
+      - name: Upload checked V1.0.0 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DoorNet2-V1.0.0
+          path: artifacts/DoorNet2-V1.0.0-*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DoorNet2-V1.0.0-Diagnostics
+          path: |
+            ${{ runner.temp }}/DoorNet2-V1.0.0-build.log
+            openwrt/.config
+            openwrt/logs/
+          if-no-files-found: warn
+          retention-days: 14
