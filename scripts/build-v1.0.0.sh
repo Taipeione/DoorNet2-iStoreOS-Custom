@@ -17,7 +17,7 @@ repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
 "$repo_root/scripts/apply-board-support.sh" "$source_dir"
 cp "$repo_root/config/feeds.conf" "$source_dir/feeds.conf"
-cp "$repo_root/configs/doorNet2-v1.0.0.config" "$source_dir/.config"
+cp "$repo_root/configs/doornet2-v1.0.0.config" "$source_dir/.config"
 "$source_dir/scripts/feeds" update packages luci routing telephony video istore passwall_packages passwall_luci passwall2
 "$source_dir/scripts/feeds" install luci-compat luci-app-store luci-app-passwall luci-app-passwall2 smartdns luci-app-smartdns adguardhome chinadns-ng
 
