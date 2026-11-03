@@ -43,7 +43,11 @@ def make_dt(nodes, payloads=None):
     return struct.pack('>10I',0xd00dfeed,total,40,40+len(s),0,17,16,0,len(strings),len(s))+s+strings
 
 uboot=b'ABCDEFG'+b'boot_targets=mmc0 mmc1 nvme scsi usb pxe dhcp spi\0'+b'1234'
-dtb=make_dt([('/',{}),('/aliases',{'mmc0':b'/mmc@fe320000\0','mmc1':b'/mmc@fe330000\0'})])
+dtb=make_dt([
+    ('/',{}),
+    ('/aliases',{'mmc0':b'/mmc@fe320000\0','mmc1':b'/mmc@fe330000\0'}),
+    ('/chosen',{'u-boot,spl-boot-order':b'same-as-spl\0/mmc@fe320000\0/mmc@fe330000\0'}),
+])
 # FIT data-offset measured after aligned FDT header; data chunks are inline.
 fit=make_dt([
     ('/',{}),('/images',{}),
@@ -62,7 +66,9 @@ for i,(lba,num) in enumerate([(65536,32768),(131072,32768)]):
 image[64*512:64*512+4]=b'IDB!'
 boot=32*1024*1024
 image[boot+1024+56:boot+1024+58]=b'\x53\xef'
-marker=b'part uuid ${devtype} ${devnum}:2 uuid root=PARTUUID=${uuid}'
+marker=(b'part uuid ${devtype} ${devnum}:2 uuid '
+        b'echo "DoorNet2: boot source ${devtype} ${devnum}, root PARTUUID=${uuid}" '
+        b'root=PARTUUID=${uuid}')
 image[boot+3000:boot+3000+len(marker)]=marker
 image[64*1024*1024:64*1024*1024+4]=b'hsqs'
 image[8*1024*1024:8*1024*1024+len(fit)]=fit
@@ -71,6 +77,7 @@ with tempfile.TemporaryDirectory(prefix='doornet2-v1-static-') as d:
     with gzip.open(gz,'wb',compresslevel=1) as f:f.write(image)
     command=[sys.executable,str(root/'scripts/verify-doornet2-boot.py'),str(gz)]
     subprocess.run(command,check=True)
+    subprocess.run(command+['--require-diagnostic'],check=True)
     # A duplicate legacy OpenWrt signature must fail.
     struct.pack_into('<I',image,440,0x5452574f)
     with gzip.open(gz,'wb',compresslevel=1) as f:f.write(image)

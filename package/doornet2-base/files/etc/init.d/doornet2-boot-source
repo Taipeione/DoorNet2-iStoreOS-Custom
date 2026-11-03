@@ -1,0 +1,12 @@
+#!/bin/sh /etc/rc.common
+
+START=05
+
+start() {
+	[ -x /usr/sbin/doornet2-boot-report ] || return 0
+	/usr/sbin/doornet2-boot-report 2>/dev/null |
+	while IFS= read -r line; do
+		logger -t doornet2-boot-source "$line"
+	done
+}
+

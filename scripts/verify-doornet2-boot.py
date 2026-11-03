@@ -14,6 +14,7 @@ import zlib
 p=argparse.ArgumentParser()
 p.add_argument('path',type=Path)
 p.add_argument('--expected-signature',type=lambda s:int(s,0),default=0xD0021000)
+p.add_argument('--require-diagnostic',action='store_true')
 a=p.parse_args()
 raw=a.path.read_bytes()
 if raw[:2] == b'\x1f\x8b':
@@ -52,6 +53,9 @@ if boot[1024+56:1024+58]!=b'\x53\xef':
 # A static or stale hardcoded root=UUID would silently boot the wrong eMMC.
 if b'part uuid ${devtype} ${devnum}:2 uuid' not in boot or b'root=PARTUUID=${uuid}' not in boot:
     raise SystemExit('FAIL: boot.scr is missing dynamic root PARTUUID commands')
+diagnostic_marker=b'DoorNet2: boot source ${devtype} ${devnum}, root PARTUUID=${uuid}'
+if a.require_diagnostic and diagnostic_marker not in boot:
+    raise SystemExit('FAIL: boot.scr is missing DoorNet2 boot-source diagnostic')
 if not any(b in image[partitions[1][0]*512:partitions[1][0]*512+4] for b in (b'hsqs',b'\x53\xef')):
     # ext4 roots have superblock signature at offset 1080, checked separately
     off=partitions[1][0]*512
@@ -145,5 +149,6 @@ if b'boot_targets=mmc0 mmc1 nvme scsi usb pxe dhcp spi\0' not in code:
     raise SystemExit('FAIL: embedded U-Boot boot_targets is not TF-first mmc0 mmc1')
 if b'boot_targets=mmc1 mmc0 nvme scsi usb pxe dhcp spi\0' in code:
     raise SystemExit('FAIL: embedded U-Boot still contains eMMC-first boot targets')
-print(f'PASS: MBR root PARTUUID={sig:08x}-02, OpenWrt boot script dynamic, FIT 8MiB, conditional TF-first U-Boot env/MMC aliases/SPL order')
+diagnostic_status='boot-source diagnostic' if diagnostic_marker in boot else 'legacy boot script'
+print(f'PASS: MBR root PARTUUID={sig:08x}-02, OpenWrt boot script dynamic ({diagnostic_status}), FIT 8MiB, conditional TF-first U-Boot env/MMC aliases/SPL order')
 print('NOT TESTED: RK3399 BootROM source selection, old eMMC loader behavior, TF DDR training, physical Ethernet and eMMC fallback')

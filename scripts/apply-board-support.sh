@@ -3,6 +3,7 @@ set -eu
 
 source_dir=${1:-${OPENWRT_SOURCE:-}}
 repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+version_code=${DOORNET2_VERSION_CODE:-DoorNet2-V1.0.0}
 
 if [ -z "$source_dir" ] || [ ! -f "$source_dir/Makefile" ]; then
 	printf '%s\n' 'usage: apply-board-support.sh /path/to/pinned/openwrt-source' >&2
@@ -23,12 +24,15 @@ install -m 0644 "$repo_root/patches/uboot/998-doornet2-tf-first.patch" "$uboot_p
 install -m 0644 "$repo_root/patches/uboot/999-doornet2-rk3399.patch" "$uboot_patches/999-doornet2-rk3399.patch"
 install -m 0755 "$repo_root/scripts/doornet2-set-mbr-signature.py" "$source_dir/scripts/doornet2-set-mbr-signature.py"
 cp -R "$repo_root/package/doornet2-base/." "$policy_package/"
+sed -i "s/DoorNet2-VERSION/$version_code/g" "$policy_package/files/90-doornet2-policy"
 
-python3 - "$source_dir" <<'PY'
+DOORNET2_VERSION_CODE="$version_code" python3 - "$source_dir" <<'PY'
 from pathlib import Path
+import os
 import sys
 
 source = Path(sys.argv[1])
+version_code = os.environ["DOORNET2_VERSION_CODE"]
 
 def replace_once(path: Path, old: str, new: str) -> None:
     text = path.read_text()
@@ -55,7 +59,7 @@ TARGET_DEVICES += embedfire_doornet2
 replace_once(image, "define Device/friendlyarm_nanopc-t4\n", device + "define Device/friendlyarm_nanopc-t4\n")
 
 release_template = source / "package/base-files/files/etc/openwrt_release"
-replace_once(release_template, "DISTRIB_DESCRIPTION='%D %V %C'\n", "DISTRIB_DESCRIPTION='DoorNet2-V1.0.0'\n")
+replace_once(release_template, "DISTRIB_DESCRIPTION='%D %V %C'\n", f"DISTRIB_DESCRIPTION='{version_code}'\n")
 
 image_commands = source / "include/image-commands.mk"
 replace_once(image_commands, '"version": "$(call json_quote,$(VERSION_NUMBER))",', '"version": "$(call json_quote,$(VERSION_CODE))",')
@@ -82,6 +86,14 @@ replace_once(
     '\tdd if="$(STAGING_DIR_IMAGE)"/$(UBOOT_DEVICE_NAME)-u-boot-rockchip.bin of="$@" seek=64 conv=notrunc\n',
     '\tpython3 "$(TOPDIR)/scripts/doornet2-set-mbr-signature.py" "$@" --signature 0xD0021000\n'
     '\tdd if="$(STAGING_DIR_IMAGE)"/$(UBOOT_DEVICE_NAME)-u-boot-rockchip.bin of="$@" seek=64 conv=notrunc\n',
+)
+
+bootscript = source / "target/linux/rockchip/image/default.bootscript"
+replace_once(
+    bootscript,
+    "part uuid ${devtype} ${devnum}:2 uuid\n",
+    "part uuid ${devtype} ${devnum}:2 uuid\n"
+    "echo \"DoorNet2: boot source ${devtype} ${devnum}, root PARTUUID=${uuid}\"\n",
 )
 
 uboot = source / "package/boot/uboot-rockchip/Makefile"

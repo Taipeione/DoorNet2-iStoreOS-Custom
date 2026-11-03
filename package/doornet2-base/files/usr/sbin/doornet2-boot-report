@@ -1,0 +1,80 @@
+#!/bin/sh
+# Read-only DoorNet2 boot-source report. It never changes UCI, block devices,
+# U-Boot environment or partitions.
+
+set +e
+
+line() { printf '%s\n' "$*"; }
+
+root_source=''
+if command -v findmnt >/dev/null 2>&1; then
+	root_source=$(findmnt -n -o SOURCE / 2>/dev/null)
+fi
+[ -n "$root_source" ] || root_source=$(awk '$2 == "/" { print $1; exit }' /proc/mounts 2>/dev/null)
+
+root_device=$(basename "$root_source")
+root_sysfs="/sys/class/block/$root_device/device"
+root_real=''
+[ -e "$root_sysfs" ] && root_real=$(readlink -f "$root_sysfs" 2>/dev/null)
+
+root_class='UNKNOWN'
+case "$root_source:$root_real" in
+	*'d0021000-02'*) root_class='TF_PARTUUID' ;;
+	*fe320000*) root_class='TF_SDMMC' ;;
+	*fe330000*) root_class='EMMC_SDHCI' ;;
+esac
+
+model=$(tr '\000' ' ' < /proc/device-tree/model 2>/dev/null)
+cmdline=$(cat /proc/cmdline 2>/dev/null)
+line "DOORNET2_BOOT_REPORT=V1.0.1"
+line "MODEL=$model"
+line "CMDLINE=$cmdline"
+line "ROOT_SOURCE=$root_source"
+line "ROOT_DEVICE=$root_device"
+line "ROOT_SYSFS=$root_real"
+line "ROOT_CLASS=$root_class"
+
+for alias in mmc0 mmc1; do
+	path="/proc/device-tree/aliases/$alias"
+	if [ -r "$path" ]; then
+		alias_value=$(tr '\000' ' ' < "$path")
+		line "ALIAS_$alias=$alias_value"
+	else
+		line "ALIAS_$alias=NOT_PRESENT"
+	fi
+done
+
+for block in /sys/class/block/mmcblk*; do
+	[ -e "$block" ] || continue
+	name=$(basename "$block")
+	device_path=$(readlink -f "$block/device" 2>/dev/null)
+	class='UNKNOWN'
+	case "$device_path" in
+		*fe320000*) class='TF_SDMMC' ;;
+		*fe330000*) class='EMMC_SDHCI' ;;
+	esac
+	line "BLOCK=$name CLASS=$class SYSFS=$device_path"
+done
+
+for card in /sys/class/mmc_host/*/*; do
+	[ -d "$card" ] || continue
+	card_name=$(basename "$card")
+	card_path=$(readlink -f "$card" 2>/dev/null)
+	line "CARD=$card_name SYSFS=$card_path"
+	for attr in name type manfid serial cid csd; do
+		if [ -r "$card/$attr" ]; then
+			attr_value=$(cat "$card/$attr" 2>/dev/null)
+			line "CARD_$card_name"_"$attr=$attr_value"
+		fi
+	done
+done
+
+line 'PARTITIONS_BEGIN'
+cat /proc/partitions 2>/dev/null
+line 'PARTITIONS_END'
+if command -v blkid >/dev/null 2>&1; then
+	line 'BLKID_BEGIN'
+	blkid 2>/dev/null
+	line 'BLKID_END'
+fi
+
