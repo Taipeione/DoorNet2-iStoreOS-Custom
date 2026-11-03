@@ -2,13 +2,33 @@
 
 This record describes only GitHub-hosted Actions runs from the public
 repository. Local checks are not firmware-build evidence. Runs #1-#8 below
-belong to the historical V0.1 workflow. The current main line is V1.0.0.
-The public Actions API currently exposes only V1.0.0 runs #1-#4; no V0.1
-Run #9 is present in the repository's public run inventory, so an external
-handoff reference to that number is not treated as evidence. The old V0.1
+belong to the historical V0.1 workflow. The current main line is V1.0.1.
+The V1.0.1 release is tagged from the successful build commit
+`7243b4cb58a467e36d6f44d996de3f6b91bacc89`.
+The public Actions API exposes V1.0.0 runs #1-#4 and V1.0.1 runs #1-#3; no
+V0.1 Run #9 is present in the repository's public run inventory, so an
+external handoff reference to that number is not treated as evidence. The old V0.1
 run URLs below are retained as historical project records, but `gh run view`
 currently reports them unavailable after the old workflow was removed; they
 are not used as current build proof.
+
+## V1.0.1 — diagnostic/static hardening release
+
+| Run | Commit | Result | Evidence |
+|---|---|---|---|
+| [#1](https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/41663687611) | `ad61712` | FAIL before compilation | The build script files were committed without executable mode. The first fatal error was `Permission denied` when Actions invoked `scripts/build-v1.0.1.sh`. Corrected in `7243b4c`; no firmware artifact was accepted. |
+| [#2](https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/41663983589) | `7243b4c` | CANCELLED during compilation | The run entered full OpenWrt compilation and produced no fatal build error before it was cancelled after prolonged monitoring. It produced no accepted firmware artifact and is not build evidence. |
+| [#3](https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/41670160344) | `7243b4c` | SUCCESS; released as v1.0.1 | Full GitHub-hosted build, static checks, artifact generation, SHA256 verification and Artifact upload passed. Artifact ZIP ID `13253373282`, digest `sha256:bfc6cb0a468138145b8721e557c3da38fff8680a536437ec84c894180f0d5338`. |
+
+Run #3 BuildInfo binds the release to OpenWrt `v25.12.5`, commit
+`f0a60eee2fe051741c643ea6118718aae1ef17fb`, target
+`rockchip/armv8/embedfire_doornet2`, and LAN `192.168.100.1/24`.
+Independent post-download checks reproduced the Artifact digest and verified
+both raw images at 176160768 bytes with MBR `55aa`, disk signature
+`0xd0021000`, root PARTUUID `d0021000-02`, non-empty RK3399 loader area, FIT
+at 8 MiB, dynamic root PARTUUID commands and the DoorNet2 boot-source marker.
+Hardware boot remains `NOT TESTED`; the release does not claim that the
+unchanged eMMC BootROM/TPL/SPL path selects TF on ordinary power-on.
 
 | Run | Commit | Result | Root cause and remediation |
 |---|---|---|---|
