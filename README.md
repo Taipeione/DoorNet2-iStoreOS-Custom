@@ -20,6 +20,11 @@ Without USB-TTL, use the [LAN-only read-only plan](docs/lan-only-acceptance.md)
 to determine whether the currently running system is reachable over SSH. Do
 not use SSH to run `sysupgrade` or modify U-Boot/eMMC.
 
+The Run #4 images have passed whole-disk TF-image structure checks. See the
+[TF first-boot guide](docs/tf-first-boot.md) before writing a card. Physical TF
+boot remains `NOT TESTED`; do not publish a Release based only on the cloud
+artifact.
+
 See [docs/source-selection.md](docs/source-selection.md),
 [docs/hardware-audit.md](docs/hardware-audit.md), and
 [docs/test-matrix.md](docs/test-matrix.md). The actual cloud-run record is in
