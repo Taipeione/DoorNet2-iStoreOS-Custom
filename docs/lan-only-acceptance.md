@@ -36,7 +36,7 @@ changes UCI, packages, boot variables, partitions, or files:
 
 ```sh
 ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new root@192.168.100.1 \
-  'cat /etc/openwrt_release; cat /proc/cmdline; ubus call system board; lsblk -o NAME,SIZE,FSTYPE,PARTUUID,MOUNTPOINTS; blkid; ip -brief address; ip route; ip -6 route; uci -q show network; uci -q show dhcp; ss -lntup; /etc/init.d/dropbear enabled; /etc/init.d/uhttpd enabled'
+  'cat /etc/openwrt_release; cat /proc/cmdline; ubus call system board; lsblk -o NAME,SIZE,FSTYPE,PARTUUID,MOUNTPOINTS; blkid; ip -brief address; ip route; ip -6 route; uci -q show network; uci -q show firewall; uci -q show dhcp; if command -v ss >/dev/null 2>&1; then ss -lntup; else netstat -lntup 2>/dev/null || true; fi; /etc/init.d/dropbear enabled; /etc/init.d/uhttpd enabled; true'
 ```
 
 The SSH probe itself is `NOT TESTED` until the user supplies a live result.
