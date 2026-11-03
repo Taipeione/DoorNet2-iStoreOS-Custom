@@ -236,7 +236,7 @@ LAN 口，需要在 macOS 网络设置中临时为该 Mac Ethernet 服务设置
 - TF 镜像结构：PASS；
 - Run #4 压缩包和 raw image SHA256：PASS；
 - macOS 写入/回读方案：静态审查 PASS；
-- 实际 TF 启动：NOT TESTED；
+- 实际 TF 启动：HARDWARE TESTED — 插卡上电后仍进入原 eMMC；具体失败阶段 NOT TESTED；
 - eMMC/U-Boot 保持不变：待实机操作后由只读信息确认；
 - LuCI、iStore、网络、DNS、插件和 OTA：NOT TESTED；
 - 正式 Release：未发布；

@@ -7,7 +7,7 @@
 | Base | No iStoreOS base system configured | PASS (source configuration) |
 | Board | DoorNet2 RK3399 DTS/U-Boot/BL31 integration | NOT TESTED |
 | Image | Full GitHub-hosted OpenWrt build and DoorNet2 artifacts | PASS — V1.0.0 Run #4; hardware boot remains NOT TESTED |
-| TF image | Whole-disk partition/SPL/FIT/rootfs/TF-first structure for independent TF boot | PASS — Run #4 ext4 and squashfs; physical boot NOT TESTED |
+| TF image | Whole-disk partition/SPL/FIT/rootfs/conditional TF-first structure | STATIC PASS — Run #4 ext4 and squashfs; hardware attempt stayed on eMMC; failing stage NOT TESTED |
 | Defaults | Clean-install LAN `192.168.100.1/24` | PASS (configuration) |
 | LAN/SSH | Read-only discovery of current device system over existing LAN | NOT TESTED — no device connection evidence |
 | iStore | Pinned application feed/package compilation | CLOUD BUILD PASS; runtime NOT TESTED |

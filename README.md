@@ -12,9 +12,10 @@ as an application store; the base system is official OpenWrt.
 - The project never flashes a real device as part of CI or development.
 - V1.0.0 Run #4 produced and verified the cloud artifact; no formal Release
   exists yet because hardware acceptance and release approval are pending.
-  Hardware boot, network ports, plugin lifecycle, DNS routing, WeChatDirect
-  behavior and OTA recovery remain `NOT TESTED` until tested on the physical
-  board.
+  The first TF attempt was performed, but the board still booted its original
+  eMMC system; the failing boot stage is `NOT TESTED`. Network ports, plugin
+  lifecycle, DNS routing, WeChatDirect behavior and OTA recovery remain
+  `NOT TESTED`.
 
 Without USB-TTL, use the [LAN-only read-only plan](docs/lan-only-acceptance.md)
 to determine whether the currently running system is reachable over SSH. Do
@@ -27,5 +28,6 @@ artifact.
 
 See [docs/source-selection.md](docs/source-selection.md),
 [docs/hardware-audit.md](docs/hardware-audit.md), and
-[docs/test-matrix.md](docs/test-matrix.md). The actual cloud-run record is in
+[docs/test-matrix.md](docs/test-matrix.md) and the
+[TF-first failure audit](docs/tf-first-failure-audit.md). The actual cloud-run record is in
 [docs/cloud-build-history.md](docs/cloud-build-history.md).

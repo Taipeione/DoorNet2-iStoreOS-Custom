@@ -16,10 +16,13 @@ p.add_argument('path',type=Path)
 p.add_argument('--expected-signature',type=lambda s:int(s,0),default=0xD0021000)
 a=p.parse_args()
 raw=a.path.read_bytes()
-obj=zlib.decompressobj(31)
-image=obj.decompress(raw)+obj.flush()
-if not obj.eof:
-    raise SystemExit('FAIL: missing/invalid gzip stream')
+if raw[:2] == b'\x1f\x8b':
+    obj=zlib.decompressobj(31)
+    image=obj.decompress(raw)+obj.flush()
+    if not obj.eof:
+        raise SystemExit('FAIL: missing/invalid gzip stream')
+else:
+    image=raw
 if image[:512].count(b'\0')==512:
     raise SystemExit('FAIL: empty MBR')
 if image[510:512]!=b'\x55\xaa':
@@ -132,11 +135,15 @@ try:
         raise ValueError('mmc0 is not SD/TF controller fe320000')
     if dprops[('/aliases','mmc1')]!=b'/mmc@fe330000\0':
         raise ValueError('mmc1 is not eMMC controller fe330000')
+    spl_order=dprops.get(('/chosen','u-boot,spl-boot-order'))
+    expected_order=(b'same-as-spl\0/mmc@fe320000\0/mmc@fe330000\0')
+    if spl_order!=expected_order:
+        raise ValueError('unexpected /chosen/u-boot,spl-boot-order')
 except (ValueError,KeyError,struct.error) as e:
     raise SystemExit(f'FAIL: wrong U-Boot DTB MMC aliases: {e}')
 if b'boot_targets=mmc0 mmc1 nvme scsi usb pxe dhcp spi\0' not in code:
     raise SystemExit('FAIL: embedded U-Boot boot_targets is not TF-first mmc0 mmc1')
 if b'boot_targets=mmc1 mmc0 nvme scsi usb pxe dhcp spi\0' in code:
     raise SystemExit('FAIL: embedded U-Boot still contains eMMC-first boot targets')
-print(f'PASS: MBR root PARTUUID={sig:08x}-02, OpenWrt boot script dynamic, FIT 8MiB, TF-first U-Boot env and MMC aliases')
-print('NOT TESTED: ROM boot order, TF DDR training, physical Ethernet and eMMC fallback')
+print(f'PASS: MBR root PARTUUID={sig:08x}-02, OpenWrt boot script dynamic, FIT 8MiB, conditional TF-first U-Boot env/MMC aliases/SPL order')
+print('NOT TESTED: RK3399 BootROM source selection, old eMMC loader behavior, TF DDR training, physical Ethernet and eMMC fallback')

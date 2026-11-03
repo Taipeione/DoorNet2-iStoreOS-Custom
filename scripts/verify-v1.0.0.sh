@@ -30,6 +30,7 @@ check test -f "$source_dir/package/boot/uboot-rockchip/patches/999-doornet2-rk33
 check test -x "$source_dir/scripts/doornet2-set-mbr-signature.py"
 check rg -q '^\+CONFIG_ENV_IS_NOWHERE=y' "$repo_root/patches/uboot/999-doornet2-rk3399.patch"
 check_not rg -q '^\+CONFIG_ENV_IS_IN_MMC=y|^\+CONFIG_SYS_MMC_ENV_DEV=1' "$repo_root/patches/uboot/999-doornet2-rk3399.patch"
+check rg -F -q 'u-boot,spl-boot-order = "same-as-spl", &sdmmc, &sdhci;' "$repo_root/patches/uboot/999-doornet2-rk3399.patch"
 check rg -F -q 'doornet2-set-mbr-signature.py' "$source_dir/target/linux/rockchip/image/Makefile"
 check rg -F -q '0xD0021000' "$source_dir/target/linux/rockchip/image/Makefile"
 check rg -F -q 'part uuid ${devtype} ${devnum}:2 uuid' "$source_dir/target/linux/rockchip/image/default.bootscript"

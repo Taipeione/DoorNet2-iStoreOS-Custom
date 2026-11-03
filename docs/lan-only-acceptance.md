@@ -207,12 +207,15 @@ Run #4 固件的静态检查已证明：
 
 - U-Boot 启动目标为 `mmc0 mmc1 ...`，内置 U-Boot DTB 将 TF/SD 映射为
   `mmc0`、eMMC 映射为 `mmc1`；
-- SPL 启动顺序包含 SD/TF 控制器并优先于 eMMC；
+- U-Boot DTB 的 `/chosen/u-boot,spl-boot-order` 为
+  `same-as-spl`、SD/TF 控制器、eMMC 控制器；当本镜像的 TPL/SPL 已经执行时，
+  它能保持当前 SPL 介质优先，并按 TF、eMMC 顺序寻找后续阶段；
 - 镜像包含预期的 32 MiB boot 分区、64 MiB root 起始偏移、8 MiB FIT/U-Boot
   位置、动态 root `PARTUUID` 和 MBR signature `0xD0021000`；
 - U-Boot 使用 `CONFIG_ENV_IS_NOWHERE`，不依赖向 eMMC 写入持久化环境。
 
-以上都是源码和镜像静态证据，不能证明 BootROM 实际选择 TF、DDR3L 训练、
+以上都是源码和镜像静态证据，不能证明 RK3399 BootROM 实际选择 TF、也不能
+替代已经写在 eMMC 中的旧 TPL/SPL/U-Boot。它同样不能证明 DDR3L 训练、
 电源稳定性、TF 卡兼容性、物理网口或 eMMC fallback。
 
 未来若获准进行安全测试，只考虑 TF-only 方案：
@@ -234,6 +237,6 @@ Run #4 固件的静态检查已证明：
 | DoorNet2 LAN address | NOT TESTED |
 | SSH reachability and credentials | NOT TESTED |
 | Current OS/U-Boot/boot medium/partitions | NOT TESTED |
-| TF-only boot without eMMC modification | NOT TESTED |
+| TF-only boot without eMMC modification | HARDWARE ATTEMPTED — original eMMC system still booted; failing stage NOT TESTED |
 | LuCI, iStore, DHCP/WAN, IPv4/IPv6 and DNS on hardware | NOT TESTED |
 | Plugin lifecycle, WeChatDirect and OTA on hardware | NOT TESTED |
