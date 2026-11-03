@@ -8,6 +8,7 @@
 | Board | DoorNet2 RK3399 DTS/U-Boot/BL31 integration | NOT TESTED |
 | Image | Full GitHub-hosted OpenWrt build and DoorNet2 artifacts | PASS — V1.0.0 Run #4; hardware boot remains NOT TESTED |
 | Defaults | Clean-install LAN `192.168.100.1/24` | PASS (configuration) |
+| LAN/SSH | Read-only discovery of current device system over existing LAN | NOT TESTED — no device connection evidence |
 | iStore | Pinned application feed/package compilation | CLOUD BUILD PASS; runtime NOT TESTED |
 | Configuration | Required package roots and complete selected-package dependency closure after final Kconfig normalization | PASS — V1.0.0 Run #4 |
 | Plugins | PassWall, PassWall2, SmartDNS, AdGuard Home, ChinaDNS-NG and Argon packaging | CLOUD BUILD PASS; runtime NOT TESTED |

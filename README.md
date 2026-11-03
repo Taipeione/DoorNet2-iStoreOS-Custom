@@ -16,6 +16,10 @@ as an application store; the base system is official OpenWrt.
   behavior and OTA recovery remain `NOT TESTED` until tested on the physical
   board.
 
+Without USB-TTL, use the [LAN-only read-only plan](docs/lan-only-acceptance.md)
+to determine whether the currently running system is reachable over SSH. Do
+not use SSH to run `sysupgrade` or modify U-Boot/eMMC.
+
 See [docs/source-selection.md](docs/source-selection.md),
 [docs/hardware-audit.md](docs/hardware-audit.md), and
 [docs/test-matrix.md](docs/test-matrix.md). The actual cloud-run record is in
