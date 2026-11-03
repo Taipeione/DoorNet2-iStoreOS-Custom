@@ -62,7 +62,7 @@ for i,(lba,num) in enumerate([(65536,32768),(131072,32768)]):
 image[64*512:64*512+4]=b'IDB!'
 boot=32*1024*1024
 image[boot+1024+56:boot+1024+58]=b'\x53\xef'
-marker=b'part uuid mmc ${devnum}:2 uuid root=PARTUUID=${uuid}'
+marker=b'part uuid ${devtype} ${devnum}:2 uuid root=PARTUUID=${uuid}'
 image[boot+3000:boot+3000+len(marker)]=marker
 image[64*1024*1024:64*1024*1024+4]=b'hsqs'
 image[8*1024*1024:8*1024*1024+len(fit)]=fit

@@ -45,9 +45,9 @@ boot_end=(partitions[0][0]+partitions[0][1])*512
 boot=image[boot_start:boot_end]
 if boot[1024+56:1024+58]!=b'\x53\xef':
     raise SystemExit('FAIL: OpenWrt boot partition is not ext4')
-# The stock mmc.bootscript gets the chosen devnum's partition 2 UUID at boot.
+# The stock Rockchip boot script gets the chosen devnum's partition 2 UUID at boot.
 # A static or stale hardcoded root=UUID would silently boot the wrong eMMC.
-if b'part uuid mmc ${devnum}:2 uuid' not in boot or b'root=PARTUUID=${uuid}' not in boot:
+if b'part uuid ${devtype} ${devnum}:2 uuid' not in boot or b'root=PARTUUID=${uuid}' not in boot:
     raise SystemExit('FAIL: boot.scr is missing dynamic root PARTUUID commands')
 if not any(b in image[partitions[1][0]*512:partitions[1][0]*512+4] for b in (b'hsqs',b'\x53\xef')):
     # ext4 roots have superblock signature at offset 1080, checked separately

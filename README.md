@@ -1,8 +1,9 @@
 # DoorNet2 Custom Firmware
 
-`DoorNet2-V0.1` is a public standard-OpenWrt firmware project for the
-EmbedFire DoorNet2 (Rockchip RK3399, 1 GB DDR3L). iStore is integrated only as
-an application store; the base system is official OpenWrt.
+`DoorNet2-V1.0.0` is the current main-line standard-OpenWrt firmware project
+for the EmbedFire DoorNet2 (Rockchip RK3399, 1 GB DDR3L). The `DoorNet2-V0.1`
+tag is retained as historical build-line evidence. iStore is integrated only
+as an application store; the base system is official OpenWrt.
 
 ## Safety and status
 

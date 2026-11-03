@@ -9,7 +9,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/doornet2-base
   SECTION:=base
   CATEGORY:=Base system
-  TITLE:=DoorNet2-V0.1 defaults and configuration-preservation policy
+  TITLE:=DoorNet2-V1.0.0 defaults and configuration-preservation policy
   DEPENDS:=+uci +dnsmasq-full
 endef
 

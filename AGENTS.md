@@ -1,7 +1,8 @@
 # DoorNet2 Custom Firmware
 
-This public repository builds `DoorNet2-V0.1` for EmbedFire DoorNet2 (RK3399,
-1 GB DDR3L) from standard OpenWrt. It is not an iStoreOS fork.
+This public repository builds `DoorNet2-V1.0.0` for EmbedFire DoorNet2 (RK3399,
+1 GB DDR3L) from standard OpenWrt. The `DoorNet2-V0.1` tag is historical. It
+is not an iStoreOS fork.
 
 ## Non-negotiable rules
 
@@ -27,5 +28,5 @@ This public repository builds `DoorNet2-V0.1` for EmbedFire DoorNet2 (RK3399,
 ## Naming
 
 Workflow, job, formal artifact prefix, release title and metadata use exactly
-`DoorNet2-V0.1`. The Actions run name is
-`DoorNet2-V0.1 #${{ github.run_number }}`.
+`DoorNet2-V1.0.0`. The Actions run name is
+`DoorNet2-V1.0.0 #${{ github.run_number }}`.

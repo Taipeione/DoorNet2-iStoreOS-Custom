@@ -19,7 +19,9 @@ mkdir -p "$kernel_files" "$kernel_patches" "$uboot_patches" "$policy_package"
 install -m 0644 "$repo_root/patches/kernel/rk3399-doornet2.dts" "$kernel_files/rk3399-doornet2.dts"
 install -m 0644 "$repo_root/patches/kernel/rk3399-doornet2.dtsi" "$kernel_files/rk3399-doornet2.dtsi"
 install -m 0644 "$repo_root/patches/kernel/999-add-doornet2-dtb.patch" "$kernel_patches/999-add-doornet2-dtb.patch"
+install -m 0644 "$repo_root/patches/uboot/998-doornet2-tf-first.patch" "$uboot_patches/998-doornet2-tf-first.patch"
 install -m 0644 "$repo_root/patches/uboot/999-doornet2-rk3399.patch" "$uboot_patches/999-doornet2-rk3399.patch"
+install -m 0755 "$repo_root/scripts/doornet2-set-mbr-signature.py" "$source_dir/scripts/doornet2-set-mbr-signature.py"
 cp -R "$repo_root/package/doornet2-base/." "$policy_package/"
 
 python3 - "$source_dir" <<'PY'
@@ -53,7 +55,7 @@ TARGET_DEVICES += embedfire_doornet2
 replace_once(image, "define Device/friendlyarm_nanopc-t4\n", device + "define Device/friendlyarm_nanopc-t4\n")
 
 release_template = source / "package/base-files/files/etc/openwrt_release"
-replace_once(release_template, "DISTRIB_DESCRIPTION='%D %V %C'\n", "DISTRIB_DESCRIPTION='DoorNet2-V0.1'\n")
+replace_once(release_template, "DISTRIB_DESCRIPTION='%D %V %C'\n", "DISTRIB_DESCRIPTION='DoorNet2-V1.0.0'\n")
 
 image_commands = source / "include/image-commands.mk"
 replace_once(image_commands, '"version": "$(call json_quote,$(VERSION_NUMBER))",', '"version": "$(call json_quote,$(VERSION_CODE))",')
@@ -73,6 +75,14 @@ if "embedfire,doornet2|\\\n" not in text:
     if anchor not in text:
         raise SystemExit(f"LED board-list anchor not found: {leds}")
     leds.write_text(text.replace(anchor, "embedfire,doornet2|\\\n" + anchor, 1))
+
+image_makefile = source / "target/linux/rockchip/image/Makefile"
+replace_once(
+    image_makefile,
+    '\tdd if="$(STAGING_DIR_IMAGE)"/$(UBOOT_DEVICE_NAME)-u-boot-rockchip.bin of="$@" seek=64 conv=notrunc\n',
+    '\tpython3 "$(TOPDIR)/scripts/doornet2-set-mbr-signature.py" "$@" --signature 0xD0021000\n'
+    '\tdd if="$(STAGING_DIR_IMAGE)"/$(UBOOT_DEVICE_NAME)-u-boot-rockchip.bin of="$@" seek=64 conv=notrunc\n',
+)
 
 uboot = source / "package/boot/uboot-rockchip/Makefile"
 uboot_block = """define U-Boot/doornet2-rk3399

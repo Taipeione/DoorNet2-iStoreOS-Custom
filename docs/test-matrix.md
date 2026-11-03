@@ -1,4 +1,4 @@
-# DoorNet2-V0.1 test matrix
+# DoorNet2 test matrix
 
 | Area | Required check | Status |
 |---|---|---|
@@ -6,10 +6,10 @@
 | Base | Fixed official OpenWrt v25.12.5 commit | PASS |
 | Base | No iStoreOS base system configured | PASS (source configuration) |
 | Board | DoorNet2 RK3399 DTS/U-Boot/BL31 integration | NOT TESTED |
-| Image | Full GitHub-hosted OpenWrt build and DoorNet2 artifacts | NOT TESTED |
+| Image | Full GitHub-hosted OpenWrt build and DoorNet2 artifacts | NOT TESTED — current V1.0.0 cloud run pending |
 | Defaults | Clean-install LAN `192.168.100.1/24` | PASS (configuration) |
 | iStore | Pinned application feed/package compilation | NOT TESTED |
-| Configuration | Required package roots and complete selected-package dependency closure after final Kconfig normalization | PASS (GitHub Actions run #6 compiled the full image; final cloud configuration contains `xz-utils` and earlier `libacl` closure requirements) |
+| Configuration | Required package roots and complete selected-package dependency closure after final Kconfig normalization | STATIC PASS; historical V0.1 run #6 compiled the image but its artifact gate failed |
 | Plugins | PassWall, PassWall2, SmartDNS, AdGuard Home, ChinaDNS-NG and Argon packaging | NOT TESTED |
 | Lifecycle | Service enable/disable, autostart and reboot persistence | NOT TESTED |
 | DNS | Port coexistence, IPv4/IPv6 and disabled-service baseline | NOT TESTED |

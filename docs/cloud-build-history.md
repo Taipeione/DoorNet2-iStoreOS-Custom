@@ -1,7 +1,9 @@
-# DoorNet2-V0.1 cloud build history
+# DoorNet2 cloud build history
 
-This record describes only GitHub-hosted Actions runs from the newly created
-public repository. Local checks are not firmware-build evidence.
+This record describes only GitHub-hosted Actions runs from the public
+repository. Local checks are not firmware-build evidence. Runs #1-#8 below
+belong to the historical V0.1 workflow. The current main line is V1.0.0; it
+has no successful cloud build or formal artifact yet.
 
 | Run | Commit | Result | Root cause and remediation |
 |---|---|---|---|
