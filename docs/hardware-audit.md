@@ -11,8 +11,9 @@ U-Boot 2022.07, SPL/TPL, FIT and an `embedfire_doornet2` DTB. This establishes
 the board family but does not prove DDR3L timings, eMMC layout, port mapping,
 or compatibility with an OpenWrt 6.12 build.
 
-The project targets the owner-confirmed 1 GB DDR3L variant. Board DTS,
-U-Boot/BL31 integration, SPL/TPL offsets and image layout must be introduced
-only after their source and current-kernel compatibility are checked. Until a
-cloud artifact and hardware test exist, all boot-compatibility claims are
-`NOT TESTED`.
+The project targets the owner-confirmed 1 GB DDR3L variant. The successful
+Run #4 cloud artifact now proves source-level integration, image layout and
+static boot-chain checks, but not physical boot compatibility. ROM boot order,
+DDR3L training, SPL/TPL execution, eMMC layout, port mapping and current
+kernel behavior remain `NOT TESTED` until a real device supplies logs or
+screenshots.

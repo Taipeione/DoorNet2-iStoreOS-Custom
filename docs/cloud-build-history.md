@@ -2,8 +2,13 @@
 
 This record describes only GitHub-hosted Actions runs from the public
 repository. Local checks are not firmware-build evidence. Runs #1-#8 below
-belong to the historical V0.1 workflow. The current main line is V1.0.0; it
-has no successful cloud build or formal artifact yet.
+belong to the historical V0.1 workflow. The current main line is V1.0.0.
+The public Actions API currently exposes only V1.0.0 runs #1-#4; no V0.1
+Run #9 is present in the repository's public run inventory, so an external
+handoff reference to that number is not treated as evidence. The old V0.1
+run URLs below are retained as historical project records, but `gh run view`
+currently reports them unavailable after the old workflow was removed; they
+are not used as current build proof.
 
 | Run | Commit | Result | Root cause and remediation |
 |---|---|---|---|
@@ -130,3 +135,51 @@ has no successful cloud build or formal artifact yet.
   commit replaces only the unavailable download with the package's tracked
   source files. The next GitHub-hosted build must prove the package compiles
   and that no new dependency error replaces it.
+
+## V1.0.0 Run #1 — legacy source tree did not contain current build scripts
+
+- Run: https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/39261403393
+- Commit: `6355bcd2446a221dddb9108f8d37c8da23b6921f`
+- Result: FAIL during the old Python syntax-check step because the V1.0.0
+  scripts were not yet present in that commit. It produced no firmware.
+
+## V1.0.0 Run #2 — case-sensitive configuration path
+
+- Run: https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/41584219482
+- Commit: `4ca186fb27c36d36b9ebf826431fe94bc29201bd`
+- First fatal error: the build script requested
+  `configs/doorNet2-v1.0.0.config`, while the tracked file was
+  `configs/doornet2-v1.0.0.config`.
+- Corrective action: normalize all active references to the tracked lowercase
+  filename. No firmware artifact was produced.
+
+## V1.0.0 Run #3 — U-Boot 2025.10 patch context
+
+- Run: https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/41584416726
+- Commit: `cfab258012ef90c36919b6495a5c611199396831`
+- First fatal error: U-Boot package preparation rejected
+  `998-doornet2-tf-first.patch` because upstream U-Boot 2025.10 writes the
+  `BOOT_TARGETS` define with a tab, while the patch context required spaces.
+- Corrective action: update only that patch context and verify both U-Boot
+  patches against the exact upstream source before rebuilding. No firmware
+  artifact was produced.
+
+## V1.0.0 Run #4 — successful cloud build and checked artifact
+
+- Run: https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/41585341831
+- Commit: `0a2aa2062a23d7f7db4cc09296a4cfc04be5ca0e`
+- Result: SUCCESS in 1h26m. Complete OpenWrt compilation, boot-chain
+  verification, BuildInfo/Version generation, SHA256 verification and
+  artifact upload all passed.
+- Artifact: [DoorNet2-V1.0.0](https://github.com/Taipeione/DoorNet2-iStoreOS-Custom/actions/runs/41585341831/artifacts/13211258157)
+- Artifact ZIP: 114857491 bytes; GitHub upload digest
+  `f4e18f91760820719e9c143d5335404eb895dfb15f1a522273ff2c8a8169befb`.
+- Firmware SHA256:
+  - ext4: `e1769c034bd39a4bfc91a38950f7b9e0bb1a1430412c02e9aa6f0c7f6308d63a`
+  - squashfs: `8bf718f5e6f651e2c18c78a076521b6dbc86f58ce16bb81ab809e6803675b64a`
+- BuildInfo binds the artifact to OpenWrt `v25.12.5`, commit
+  `f0a60eee2fe051741c643ea6118718aae1ef17fb`, target
+  `rockchip/armv8/embedfire_doornet2`, and LAN `192.168.100.1/24`.
+- This is cloud/source/artifact acceptance only. ROM boot order, DDR3L
+  training, physical Ethernet, eMMC fallback and all runtime tests remain
+  `NOT TESTED`; no formal Release has been created.

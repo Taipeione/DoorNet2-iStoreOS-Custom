@@ -10,10 +10,11 @@ as an application store; the base system is official OpenWrt.
 - Clean-install LAN target: `192.168.100.1/24`.
 - Formal builds run only on GitHub-hosted Actions.
 - The project never flashes a real device as part of CI or development.
-- No release exists until a cloud build produces and verifies a DoorNet2
-  image. Hardware boot, network ports, plugin lifecycle, DNS routing,
-  WeChatDirect behavior and OTA recovery are `NOT TESTED` until tested on the
-  physical board.
+- V1.0.0 Run #4 produced and verified the cloud artifact; no formal Release
+  exists yet because hardware acceptance and release approval are pending.
+  Hardware boot, network ports, plugin lifecycle, DNS routing, WeChatDirect
+  behavior and OTA recovery remain `NOT TESTED` until tested on the physical
+  board.
 
 See [docs/source-selection.md](docs/source-selection.md),
 [docs/hardware-audit.md](docs/hardware-audit.md), and
